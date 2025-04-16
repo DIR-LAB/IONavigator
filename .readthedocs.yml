@@ -2,3 +2,10 @@ version: 2
 
 mkdocs:
   configuration: mkdocs.yml
+
+build:
+  image:
+    name: python:3.11
+    python: 3.11
+
+
