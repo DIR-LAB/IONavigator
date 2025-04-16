@@ -2,3 +2,6 @@ site_name: I/O Navigator
 site_url:
 theme:
   name: material
+
+nav:
+  - Home: index.md
