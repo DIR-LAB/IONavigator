@@ -1,0 +1,33 @@
+.upload-section {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.upload-button {
+  padding: 12px 24px;
+  background-color: #9ac89b;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.upload-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.upload-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.upload-button:hover:not(:disabled) {
+  background-color: #45a049;
+}

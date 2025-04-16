@@ -1,0 +1,300 @@
+.trace-table-container {
+  margin: 20px auto;
+  width: 80%;
+  max-width: 1000px;
+  overflow-x: auto;
+}
+
+.trace-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  border: 1px solid #ddd;
+}
+
+.trace-table th,
+.trace-table td {
+  padding: 12px;
+  text-align: center;
+  border: 1px solid #ddd;
+  vertical-align: middle;
+}
+
+.trace-table th {
+  background-color: #f5f5f5;
+  font-weight: bold;
+  border-bottom: 2px solid #ddd;
+  text-align: center;
+}
+
+.trace-table tr:hover {
+  background-color: #f9f9f9;
+}
+
+.trace-table button {
+  border: none;
+  cursor: pointer;
+  margin: 0;
+}
+
+.trace-table .interact-button,
+.trace-table .analysis-button,
+.trace-table .inspect-button,
+.trace-table .delete-button {
+  background-color: transparent !important;
+}
+
+.trace-table button:hover {
+  opacity: 0.9;
+}
+
+@media (max-width: 1024px) {
+  .trace-table-container {
+    width: 95%;
+  }
+}
+
+.action-cell {
+  display: flex;
+  gap: 2px;
+  justify-content: center;
+  align-items: center;
+  padding: 4px;
+}
+
+.delete-button {
+  width: 32px !important;
+  height: 32px;
+  padding: 6px !important;
+  background-color: transparent !important;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delete-icon {
+  width: 16px;
+  height: 16px;
+  transition: opacity 0.2s;
+}
+
+.delete-button:hover .delete-icon {
+  opacity: 0.7;
+}
+
+.status-cell {
+  text-align: center;
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.9em;
+}
+
+.status-badge.running {
+  background-color: #7d84cf;
+  color: #000;
+}
+
+.status-badge.completed {
+  background-color: #90EE90;
+  color: #000;
+}
+
+.status-badge.failed {
+  background-color: #ffcccb;
+  color: #000;
+}
+
+.status-badge.pending {
+  background-color: #87CEEB;
+  color: #000;
+}
+
+.status-badge.stopped {
+  background-color: #FFB366;  /* Orange-ish color to indicate stopped state */
+  color: #000;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.inspect-button:hover .inspect-icon {
+  opacity: 0.7;
+}
+
+.interact-button:hover .interact-icon {
+  opacity: 0.7;
+}
+
+/* Common styles for all icon buttons */
+.interact-button,
+.analysis-button,
+.inspect-button,
+.delete-button {
+  width: 40px !important;
+  height: 40px;
+  padding: 6px !important;
+  background-color: transparent !important;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Common styles for all icons */
+.analysis-icon,
+.inspect-icon,
+.delete-icon {
+  width: 24px;
+  height: 24px;
+  transition: opacity 0.2s;
+}
+
+.interact-icon {
+  width: 40px;
+  height: 40px;
+  transition: opacity 0.2s;
+}
+
+/* Common hover effect */
+.interact-button:hover .interact-icon,
+.analysis-button:hover .analysis-icon,
+.inspect-button:hover .inspect-icon,
+.delete-button:hover .delete-icon {
+  opacity: 0.7;
+}
+
+/* Add width constraints for specific columns */
+.trace-table th:last-child,
+.trace-table td:last-child {
+  width: 200px;
+  max-width: 200px;
+}
+
+.inspect-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.trace-name-input {
+  width: 80%;
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: inherit;
+  font-family: inherit;
+}
+
+.trace-name-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+}
+
+.edit-hint {
+  font-size: 0.8em;
+  color: #666;
+  font-weight: normal;
+}
+
+.trace-name-cell {
+  cursor: pointer;
+}
+
+.trace-name-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+}
+
+.edit-icon {
+  width: 14px;
+  height: 14px;
+  opacity: 0.5;
+  visibility: hidden;
+  transition: opacity 0.2s;
+}
+
+.trace-name-wrapper:hover .edit-icon {
+  visibility: visible;
+  opacity: 0.7;
+}
+
+.trace-name-cell:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.analysis-button.stop {
+  color: #dc3545;
+}
+
+.analysis-button.stop:hover {
+  color: #c82333;
+}
+
+.stop-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.trace-name-input.renaming {
+  background-color: #f5f5f5;
+  cursor: wait;
+}
+
+tr.renaming {
+  opacity: 0.7;
+  background-color: #f5f5f5;
+}
+
+tr.renaming td {
+  cursor: wait;
+}
+
+.model-select {
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: white;
+  cursor: pointer;
+  width: 100%;
+  max-width: 200px;
+}
+
+.model-select:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.model-select:hover:not(:disabled) {
+  border-color: #999;
+}
+
+.model-select:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+.analysis-button.rerun {
+  background-color: #4a90e2;  /* Different color to distinguish from initial analysis */
+}
+
+.analysis-button.rerun:hover {
+  background-color: #357abd;
+}
+
+.analysis-button.rerun img {
+  transform: scale(0.9);  /* Slightly smaller icon */
+} 

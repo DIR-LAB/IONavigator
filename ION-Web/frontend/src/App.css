@@ -1,0 +1,964 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.blur {
+  filter: blur(5px);
+  pointer-events: none; /* Prevent interaction with blurred content */
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Ensure it appears above other content */
+}
+
+/* Add a viewport meta tag in your HTML <head> */
+.container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+  min-height: 100vh; /* Full viewport height */
+}
+
+@media (max-width: 1024px) {
+  .container {
+    max-width: 100%;
+    overflow-y: auto;
+  }
+}
+
+
+.example-list {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+}
+
+@media (max-width: 1024px) {
+  .example-list {
+    flex-direction: column;
+  }
+}
+
+.home-page-description {
+  max-width: 800px;
+  margin: 10px auto;
+  padding: 20px;
+  text-align: center;
+}
+
+@media (max-width: 1024px) {
+  .home-page-description {
+    padding: 10px;
+    margin: 0 5vw 0 5vw;
+  }
+}
+
+.description-section {
+  margin-bottom: 20px; /* Space between sections */
+}
+
+.description-section h2 {
+  margin-bottom: 10px; /* Space between heading and text */
+}
+
+
+.description-section ol {
+  list-style-position: inside; /* Ensure numbers are aligned with text */
+  text-align: left;
+}
+
+.disclaimer {
+  background-color: #f9f9f9; /* Light background color */
+  border-left: 4px solid #ffcc00; /* Highlight with a colored border */
+  padding: 10px 15px; /* Add padding for space */
+  font-size: 0.9em; /* Slightly smaller font size */
+  color: #555; /* Subtle text color */
+  width: 70%; /* Keep the width as desired */
+  margin: 0 auto; /* Center the disclaimer horizontally */
+  text-align: center; /* Center the text within the disclaimer */
+}
+
+@media (max-width: 1024px) {
+  .disclaimer {
+    width: 90%;
+    margin: none;
+    font-size: 0.8em;
+    padding: none;
+
+  }
+}
+
+.sample-questions {
+  display: flex;
+  flex-wrap: wrap; /* Allow buttons to wrap to the next line if needed */
+  justify-content: right; /* Center the buttons horizontally */
+  margin-right: 10px;
+  margin-bottom: 5px; /* Add space between sample questions and chat input */
+  gap: 5px; /* Space between each button */
+}
+
+.sample-questions button {
+  padding: 5px;
+  font-size: 12px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.sample-questions button:hover {
+  background-color: #0056b3;
+}
+
+.card {
+  position: relative;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+  width: 60%;
+  text-align: center;
+}
+
+@media (max-width: 1024px) {
+  .card {
+    width: 80%;
+  }
+}
+
+.card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.card h3 {
+  margin: 0;
+  font-size: 1.5em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  text-align: center;
+}
+
+.card p {
+  margin: 10px 0;
+  color: #666;
+}
+
+.card .icon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 1.2em;
+  color: #007bff;
+  cursor: pointer;
+}
+
+.card .icon:hover {
+  color: #0056b3;
+}
+
+.chat-window {
+  max-width: 50%;
+  margin: 10px auto;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #fff;
+  font-family: Arial, sans-serif;
+  height: 100%;
+  overflow-y: auto;
+  padding: 20px;
+  min-width: 50%;
+}
+
+@media (max-width: 1024px) {
+  .chat-window {
+    min-width: 85vw;
+    border-radius: 5px;
+    padding: none;
+  }
+}
+
+.chat-window h2, .trace-window h2 {
+  margin: 10px 0;
+}
+
+.chat-window p, .trace-content {
+  margin: 0 10px 10px 10px;
+  color: #555;
+}
+
+.chat-history {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  background-color: #f9f9f9;
+  max-height: 60vh;
+  min-height: 60vh;
+}
+
+@media (max-width: 1024px) {
+  .chat-history {
+    max-height: 40vh;
+    min-height: 40vh;
+  }
+}
+
+.chat-message {
+  display: flex;
+  margin-bottom: 15px;
+  align-items: flex-start;
+  position: relative; /* Ensure relative positioning for absolute children */
+}
+
+.chat-message.user {
+  flex-direction: row-reverse;
+}
+
+.chat-message.user .chat-bubble {
+  background-color: #dcf8c6;
+  align-self: flex-end;
+}
+
+.chat-message.assistant .chat-bubble {
+  background-color: #fff;
+}
+
+.chat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin: 0 10px;
+}
+
+@media (max-width: 1024px) {
+  .chat-icon {
+    width: 3vh;
+    height: 3vh;
+    margin: 0 5px 0 5px;
+  }
+}
+
+.chat-bubble {
+  max-width: 70%;
+  padding: 10px 15px;
+  border-radius: 15px;
+  position: relative;
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: left;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+  position: relative;
+  padding-bottom: 30px;
+}
+
+@media (max-width: 1024px) {
+  .chat-bubble {
+    max-width: 90%;
+    font-size: 10px;
+    padding: 5px 10px;
+  }
+  .chat-bubble ul, .chat-bubble ol {
+    padding-left: 5vw;
+  }
+}
+
+.chat-bubble:before {
+  content: '';
+  position: absolute;
+  top: 15px;
+  width: 0;
+  height: 0;
+}
+
+@media (max-width: 1024px) {
+  .chat-bubble:before {
+    top: 10px;
+  }
+}
+
+.chat-message.user .chat-bubble:before {
+  right: -10px;
+  border-left: 10px solid #dcf8c6;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+}
+
+.chat-message.assistant .chat-bubble:before {
+  left: -10px;
+  border-right: 10px solid #fff;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+}
+
+.chat-input {
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid #ccc;
+  background-color: #eee;
+}
+
+@media (max-width: 1024px) {
+  .chat-input {
+    padding: 5px;
+  }
+}
+
+.chat-input textarea {
+  flex: 1;
+  resize: none;
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  height: 3vh;
+}
+
+@media (max-width: 1024px) {
+  .chat-input textarea {
+    font-size: 12px;
+    height: 2vh;
+  }
+}
+
+.chat-input button {
+  margin-left: 10px;
+  padding: 10px 20px;
+  font-size: 14px;
+  background-color: #0084ff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.chat-input button:hover {
+  background-color: #006bbd;
+}
+
+/* Scrollbar Styling */
+.chat-history::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-history::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 3px;
+}
+
+.chat-history::-webkit-scrollbar-track {
+  background-color: #f1f1f1;
+}
+
+
+.back-button {
+  margin-bottom: 10px; /* Ensure there's space between the button and the chat window */
+  margin-left: 50px;
+  padding: 10px 20px;
+  font-size: 14px;
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+@media (max-width: 1024px) {
+  .back-button {
+    margin-left: 1vw;
+    font-size: 12px;
+  }
+}
+
+.back-button:hover {
+  background-color: #e0e0e0;
+}
+
+
+.back-button img {
+  width: 20px; /* Set the desired width */
+  height: 20px; /* Set the desired height */
+  vertical-align: middle; /* Align the icon vertically within the button */
+}
+
+.chat-bubble p {
+  color: #333; /* Set a consistent text color */
+}
+
+.chat-bubble h1, .chat-bubble h2, .chat-bubble h3, .chat-bubble h4, .chat-bubble h5, .chat-bubble h6 {
+  color: #333; /* Ensure headers have the same color */
+}
+
+.chat-bubble blockquote {
+  color: #666; /* You might want a different color for blockquotes */
+}
+
+.chat-bubble code {
+  background-color: #f5f5f5; /* Light background for inline code */
+  padding: 2px 4px; /* Smaller padding for inline code */
+  border-radius: 3px; /* Rounded corners */
+  font-family: 'Courier New', Courier, monospace; /* Monospace font */
+  color: #b00058; /* Different color for inline code */
+}
+
+.chat-bubble.loading {
+    display: flex;
+    align-items: center;
+}
+
+.dot {
+    animation: blink 1.4s infinite both;
+    font-size: 24px;
+    color: #000000;
+    margin: 0 2px;
+}
+
+.dot:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes blink {
+    0%, 20%, 50%, 80%, 100% {
+        opacity: 0;
+    }
+    40% {
+        opacity: 1;
+    }
+    60% {
+        opacity: 1;
+    }
+}
+
+/* Block code styling */
+.chat-bubble pre {
+  background-color: #f5f5f5; /* Light background for block code */
+  padding: 10px; /* More padding for block code */
+  border-radius: 3px; /* Rounded corners */
+  font-family: 'Courier New', Courier, monospace; /* Monospace font */
+  overflow-x: auto; /* Allow horizontal scrolling for long code lines */
+  white-space: pre-wrap; /* Preserve whitespace and wrap lines */
+  margin: 10px 0; /* Add margin to separate from other content */
+}
+
+@media (max-width: 1024px) {
+  .chat-bubble pre {
+    padding: 5px;
+    margin: 5px 0;
+  }
+}
+
+.button-group {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.button-group button {
+  flex: 1; /* Make buttons take equal space */
+  margin: 0 5px; /* Add space between buttons */
+  padding: 10px;
+  font-size: 14px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.button-group button:hover {
+  background-color: #0056b3;
+}
+
+.error {
+  color: red;
+}
+
+.trace-window {
+  max-width: 40%;
+  border: 1px solid #ccc;
+  margin: 10px auto;
+  box-sizing: border-box;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  font-family: Arial, sans-serif;
+  height: 78vh;
+  overflow-y: auto; /* Make the content scrollable */
+  padding: 20px;
+  text-align: center; /* Ensure all text within the trace window is left-aligned */
+}
+
+@media (max-width: 1024px) {
+  .trace-window {
+    min-width: 95vw;
+    padding: none;
+    border-radius: 5px;
+    height: 100%;
+  }
+}
+
+.trace-window h2 {
+  margin: 10px 0;
+  text-align: center; /* Ensure header text is left-aligned */
+}
+
+.trace-content {
+  white-space: pre-wrap; /* Preserve whitespace and wrap lines */
+  color: #333;
+  text-align: left; /* Ensure content text is left-aligned */
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto; /* Ensures the chat history is scrollable */
+  background-color: #f9f9f9;
+  max-height: 75vh; /* Set a fixed height for the chat history */
+}
+
+@media (max-width: 1024px) {
+  .trace-content {
+    max-height: 40vh;
+    font-size: 10px;
+  }
+}
+
+.feedback-icons {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  gap: 10px; /* Space between icons */
+  margin-bottom: 10px;
+  margin-right: 20px;
+  color: #000000;
+}
+
+@media (max-width: 1024px) {
+  .feedback-icons {
+    margin-bottom: 5px;
+    margin-right: 10px;
+    gap: 7px;
+  }
+}
+
+.icon {
+  width: 30px; /* Ensure all icons have the same width */
+  height: 30px; /* Ensure all icons have the same height */
+  cursor: pointer; /* Indicates the icon is clickable */
+  transition: fill 0.3s ease, transform 0.2s ease; /* Smooth transition for color and scale change */
+}
+
+@media (max-width: 1024px) {
+  .icon {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.icon:hover {
+  fill: #0056b3; /* Change color on hover */
+  transform: scale(1.1); /* Slightly enlarge the icon on hover */
+}
+
+.icon.active {
+  fill: #007bff; /* Example color for active state */
+}
+
+.comment-input {
+  position: absolute;
+  bottom: 40px; /* Adjust to position above the icons */
+  right: 0;
+  width: 200px; /* Set a fixed width for the input box */
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 5px;
+  z-index: 10; /* Ensure it appears above other elements */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.comment-input textarea {
+  width: 100%;
+  height: 50px; /* Set a fixed height for the textarea */
+  resize: none;
+  border: none;
+  outline: none;
+  padding: 5px;
+  font-size: 14px;
+  border-radius: 3px;
+}
+
+@media (max-width: 1024px) {
+  .comment-input textarea {
+    font-size: 12px;
+  }
+}
+
+.comment-input button {
+  width: 100%;
+  padding: 5px;
+  font-size: 14px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  margin-top: 5px;
+}
+
+.comment-input button:hover {
+  background-color: #0056b3;
+}
+
+.side-by-side {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start; /* Align items to the top */
+  gap: 20px; /* Add space between the two components */
+  max-height: 80vh;
+}
+
+@media (max-width: 1024px) {
+  .side-by-side {
+    flex-direction: column;
+    overflow-y: auto;
+    justify-content: center;
+    max-height: none;
+
+  }
+}
+
+.details-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 1024px) {
+  .details-container {
+    overflow-y: auto;
+  }
+}
+
+.back-button-container {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: flex-start; /* Align the back button to the left */
+}
+
+@media (max-width: 1024px) {
+  .back-button-container {
+    margin-left: 1vw;
+    margin-bottom: 1vh;
+  }
+}
+
+.back-button {
+  cursor: pointer;
+}
+
+.chat-bubble button {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  margin-top: 10px; /* Add some space above the button */
+}
+
+@media (max-width: 1024px) {
+  .chat-bubble button {
+    margin-top: none;
+    font-size: 10px;
+    padding: none;
+  }
+}
+
+.chat-bubble button:hover {
+  background-color: #0056b3;
+  transform: scale(1.05); /* Slightly enlarge the button on hover */
+}
+
+.source-citation {
+  color: #333;
+}
+
+.email-input-form {
+  margin-top: 20px;
+  justify-content: center;
+  animation: fadeInFromBottom 2.4s ease-in-out;
+}
+
+.anonymous-login-button {
+  margin-top: 10px;
+  justify-content: center;
+  animation: fadeInFromBottom 3.4s ease-in-out;
+}
+
+.email-input-footer {
+  margin-top: 10px;
+  animation: fadeInFromBottom 3s ease-in-out;
+  font-size: 12px;
+  color: #666;
+  margin: 10px 25vw 10px 25vw;
+}
+
+@media (max-width: 1024px) {
+  .email-input-footer {
+    font-size: 10px;
+    margin: 10px 10vw 10px 10vw;
+  }
+}
+
+.header {
+  font-size: 90px;
+  animation: fadeInFromBottom 1.2s ease-in-out;
+  margin-bottom: 15px;
+  font-family: 'Raleway';
+}
+
+@media (max-width: 1024px) {
+  .header {
+    font-size: 50px;
+  }
+}
+
+.subheader {
+  font-size: 35px;
+  font-family: 'Raleway';
+  animation: fadeInFromBottom 1.6s ease-in-out;
+}
+
+@media (max-width: 1024px) {
+  .subheader {
+    font-size: 25px;
+  }
+}
+
+.small-header {
+  font-size: 15px;
+  animation: fadeInFromBottom 2s ease-in-out;
+  margin: 0 25vw 0 25vw;
+}
+
+@media (max-width: 1024px) {
+  .small-header {
+    font-size: 12px;
+    text-align: center;
+    margin: 0 10vw 0 10vw;
+  }
+}
+
+@keyframes fadeInFromBottom {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.collaborators-panel {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  padding: 20px;
+  background-color: #f0f0f0;
+  border-radius: 10px;
+}
+
+.panel-description {
+  font-size: 14px;
+  gap: 5px;
+  color: #666;
+}
+
+.collaborators-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px;
+}
+
+.panel-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  text-align: center;
+  flex: 1;
+}
+
+.collaborator-card {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 200px;
+  text-align: center;
+  padding: 15px;
+  transition: transform 0.3s ease;
+}
+
+.collaborator-card:hover {
+  transform: translateY(-5px);
+}
+
+.collaborator-image {
+  width: 100%;
+  height: auto;
+  border-radius: 50%;
+  margin-bottom: 10px;
+}
+
+.collaborator-name {
+  font-size: 18px;
+  color: #333;
+}
+
+.collaborator-role {
+  font-size: 14px;
+  color: #333;
+}
+
+.collaborator-affiliation {
+  font-size: 12px;
+  color: #666;
+}
+
+.collaborator-email {
+  font-size: 12px;
+  color: #666;
+  text-decoration: none;
+}
+
+.collaborator-link:hover {
+  text-decoration: underline;
+}
+
+.feedback-icons {
+  display: flex;
+  align-items: center;
+}
+
+
+.feedback-message {
+  font-size: 10px;
+  color: #555;
+}
+
+@media (max-width: 1024px) {
+  .feedback-message {
+    font-size: 6px;
+    margin-left: 30%;
+    margin-right: -8%;
+  }
+}
+
+.ion-logo {
+  width: 10%;
+  height: auto;
+  animation: fadeInFromBottom 1.2s ease-in-out;
+}
+
+@media (max-width: 1024px) {
+  .ion-logo {
+    width: 30%;
+  }
+}
+
+.tool-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  margin-bottom: 10px;
+}
+
+.tool-header:hover {
+  background-color: #0056b3;
+  transform: scale(1.05);
+}
+
+@media (max-width: 1024px) {
+  .tool-header {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+}
+
+.chat-message.tool .chat-bubble {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+}
