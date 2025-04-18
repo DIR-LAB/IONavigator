@@ -465,7 +465,6 @@ def upload_trace():
             print(f"temp_path: {temp_path}")
             try:
                 file.save(temp_path)
-                print(f"file_content: {file_content}")
                 file_content = load_darshan_log(temp_path)
                 file_content = file_content.encode()
                 print(f"file_content: {file_content}")
