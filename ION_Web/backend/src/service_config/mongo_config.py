@@ -6,6 +6,7 @@ from obj_types import User, ChatHistory, APIResponse
 
 class MongoDBClient:
     def __init__(self):
+        print(os.getenv('MONGODB_CONNECTION_STRING'))
         self.client = MongoClient(os.getenv('MONGODB_CONNECTION_STRING'))
         self.db = self.client['ion-web-db']
         self.users = self.db['Users']
