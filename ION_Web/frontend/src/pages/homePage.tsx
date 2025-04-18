@@ -304,7 +304,7 @@ const HomePage: React.FC = () => {
               ref={fileInputRef}
               onChange={handleFileUpload}
               style={{ display: 'none' }}
-              accept=".txt"
+              accept=".txt,.darshan"
             />
             <button 
               className="upload-button"
