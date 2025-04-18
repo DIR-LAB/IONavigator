@@ -456,7 +456,6 @@ def upload_trace():
     if file and allowed_file(file.filename):
         if file.filename.endswith('.darshan'):
             # Read the file content first and store it
-            file_content = file.read()
             
             # Create analysis directory if it doesn't exist
             os.makedirs(ANALYSIS_DIR, exist_ok=True)
@@ -465,8 +464,7 @@ def upload_trace():
             temp_path = os.path.join(ANALYSIS_DIR, secure_filename(file.filename))
             print(f"temp_path: {temp_path}")
             try:
-                with open(temp_path, 'wb') as f:
-                    f.write(file_content)
+                file.save(temp_path)
                 print(f"file_content: {file_content}")
                 file_content = load_darshan_log(temp_path)
                 file_content = file_content.encode()
