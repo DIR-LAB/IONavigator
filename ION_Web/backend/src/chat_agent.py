@@ -6,7 +6,7 @@ import asyncio
 from service_config import s3_client
 import shutil
 
-CHAT_MODEL = "gpt-4o"
+CHAT_MODEL = "gpt-4.1-mini"
 
 ENVIRONMENT_CONTEXT = \
 """

@@ -35,12 +35,12 @@ if not os.path.exists(ANALYSIS_DIR):
 app = Flask(__name__)
 socketio = SocketIO(
     app, 
-    cors_allowed_origins=["http://127.0.0.1:3000", "http://localhost:3000", "http://3.14.1.200", "http://ec2-3-14-1-200.us-east-2.compute.amazonaws.com"],
+    cors_allowed_origins=["http://127.0.0.1:3000", "http://localhost:3000", "http://3.138.157.186", "http://ec2-3-138-157-186.us-east-2.compute.amazonaws.com"],
     async_mode='threading',
     async_handlers=True
 )
 
-CORS(app, resources={r"/api/*": {"origins": ["http://127.0.0.1:3000", "http://localhost:3000", "http://3.14.1.200", "http://ec2-3-14-1-200.us-east-2.compute.amazonaws.com"]},
+CORS(app, resources={r"/api/*": {"origins": ["http://127.0.0.1:3000", "http://localhost:3000", "http://3.138.157.186", "http://ec2-3-138-157-186.us-east-2.compute.amazonaws.com"]},
                      r"/public/*": {"origins": "*"}})
 open_cors = CORS()
 
