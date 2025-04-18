@@ -59,7 +59,6 @@ metrics_logger = setup_logger('metrics')
 backend_logger = setup_logger('backend')
 
 @app.route('/api/user', methods=['POST'])
-@cross_origin(origin="*")
 def add_user():
     email = request.json.get('email')
     if not email:
@@ -77,7 +76,6 @@ def add_user():
 
 
 @app.route('/api/user_traces', methods=['POST'])
-@cross_origin(origin="*")
 def fetch_user_traces():
     user_id = request.json.get('user_id')
     user = mongodb_client.get_user(user_id)
