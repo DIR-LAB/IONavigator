@@ -189,11 +189,22 @@ def run_analysis():
     user_id = request.json.get('user_id')
     trace_name = request.json.get('trace_name')
     llm = request.json.get('llm')
+    
     # update the model in the metadata
     metadata_path = f"{user_id}/{trace_name}/metadata.json"
-    metadata = s3_client.download_file(metadata_path)
+    metadata_content = s3_client.download_file(metadata_path)
+    if not metadata_content:
+        return jsonify({'error': 'Metadata not found'}), 404
+        
+    # Parse the JSON from bytes
+    metadata = json.loads(metadata_content)
     metadata['model'] = llm
-    s3_client.upload_file(metadata_path, metadata)
+    
+    # Convert back to JSON string and then to bytes for upload
+    metadata_json = json.dumps(metadata)
+    metadata_file = io.BytesIO(metadata_json.encode())
+    if not s3_client.upload_file(metadata_file, metadata_path):
+        return jsonify({'error': 'Failed to update metadata'}), 500
     
     if not user_id or not trace_name:
         return jsonify({'error': 'User ID and trace name are required'}), 400
@@ -467,7 +478,6 @@ def upload_trace():
                 file.save(temp_path)
                 file_content = load_darshan_log(temp_path)
                 file_content = file_content.encode()
-                print(f"file_content: {file_content}")
 
             except (IOError, OSError) as e:
                 return jsonify({'error': f'Failed to save temporary file: {str(e)}'}), 500
