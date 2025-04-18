@@ -481,7 +481,7 @@ def upload_trace():
                         print(f"Warning: Failed to remove temporary file {temp_path}")
                         
             # Create BytesIO object with the original content for S3 upload
-            file_obj = io.BytesIO(file_content)
+            file_obj = io.BytesIO(file_content.encode())
         else:
             # For non-darshan files
             file_content = file.read()
