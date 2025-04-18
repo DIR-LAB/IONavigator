@@ -481,13 +481,13 @@ def upload_trace():
 
             except (IOError, OSError) as e:
                 return jsonify({'error': f'Failed to save temporary file: {str(e)}'}), 500
-            #finally:
+            finally:
                 # Clean up temporary file
-                #if os.path.exists(temp_path):
-                #    try:
-                #        os.remove(temp_path)
-                #    except OSError:
-                #        print(f"Warning: Failed to remove temporary file {temp_path}")
+                if os.path.exists(temp_path):
+                    try:
+                        os.remove(temp_path)
+                    except OSError:
+                        print(f"Warning: Failed to remove temporary file {temp_path}")
                         
             # Create BytesIO object with the original content for S3 upload
             file_obj = io.BytesIO(file_content)
