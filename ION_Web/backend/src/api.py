@@ -467,6 +467,7 @@ def upload_trace():
             try:
                 with open(temp_path, 'wb') as f:
                     f.write(file_content)
+                print(f"file_content: {file_content}")
                 file_content = load_darshan_log(temp_path)
                 print(f"file_content: {file_content}")
 
