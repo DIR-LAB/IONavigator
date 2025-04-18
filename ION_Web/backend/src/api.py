@@ -40,8 +40,14 @@ socketio = SocketIO(
     async_handlers=True
 )
 
-CORS(app, resources={r"/api/*": {"origins": ["http://127.0.0.1:3000", "http://localhost:3000", "http://3.138.157.186", "http://ec2-3-138-157-186.us-east-2.compute.amazonaws.com"]},
-                     r"/public/*": {"origins": "*"}})
+CORS(app, resources={
+    r"/api/*": {
+        "origins": ["http://127.0.0.1:3000", "http://localhost:3000", "http://3.138.157.186", "http://ec2-3-138-157-186.us-east-2.compute.amazonaws.com"],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type"]
+    },
+    r"/public/*": {"origins": "*"}
+})
 open_cors = CORS()
 
 CHAT_MODEL = "gpt-4o"
