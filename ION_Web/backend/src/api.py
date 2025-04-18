@@ -455,19 +455,34 @@ def upload_trace():
     
     if file and allowed_file(file.filename):
         if file.filename.endswith('.darshan'):
+            # Read the file content first and store it
+            file_content = file.read()
+            
+            # Create analysis directory if it doesn't exist
+            os.makedirs(ANALYSIS_DIR, exist_ok=True)
+            
             # Save the file temporarily to process with darshan-parser
             temp_path = os.path.join(ANALYSIS_DIR, secure_filename(file.filename))
-            file.save(temp_path)
             try:
-                file_content = load_darshan_log(temp_path)
+                with open(temp_path, 'wb') as f:
+                    f.write(file_content)
+                file_content_parsed = load_darshan_log(temp_path)
+            except (IOError, OSError) as e:
+                return jsonify({'error': f'Failed to save temporary file: {str(e)}'}), 500
             finally:
                 # Clean up temporary file
                 if os.path.exists(temp_path):
-                    os.remove(temp_path)
+                    try:
+                        os.remove(temp_path)
+                    except OSError:
+                        print(f"Warning: Failed to remove temporary file {temp_path}")
+                        
+            # Create BytesIO object with the original content for S3 upload
+            file_obj = io.BytesIO(file_content)
         else:
-            # Read the file content
+            # For non-darshan files
             file_content = file.read()
-        file_obj = io.BytesIO(file_content)
+            file_obj = io.BytesIO(file_content)
             
         filename = secure_filename(file.filename)
         trace_name = os.path.splitext(filename)[0]
