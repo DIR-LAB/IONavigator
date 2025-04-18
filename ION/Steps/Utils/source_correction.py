@@ -1,9 +1,8 @@
-import sys
 
 
-from IONPro.Generator.Utils.sources import extract_sources_from_text, recalibrate_source_ids, create_merged_sources, remove_erroneous_sources
-from IONPro.Generator.Prompts import format_simple_prompt
-from IONPro.Generator.Completions import generate_async_completion
+from ION.Utils.sources import extract_sources_from_text, recalibrate_source_ids, create_merged_sources, remove_erroneous_sources
+from ION.Prompts import format_simple_prompt
+from ION.Completions import generate_async_completion
 import asyncio
 
 """

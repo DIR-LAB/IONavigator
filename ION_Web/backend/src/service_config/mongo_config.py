@@ -2,7 +2,7 @@ from pymongo import MongoClient
 import os
 from uuid import uuid4, UUID
 from typing import Tuple, Optional, Union
-from src.types import User, ChatHistory, APIResponse
+from obj_types import User, ChatHistory, APIResponse
 
 class MongoDBClient:
     def __init__(self):

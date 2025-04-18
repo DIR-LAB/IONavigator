@@ -1,10 +1,10 @@
-from IONPro.Generator.Utils.sources import remove_duplicate_sources, recalibrate_source_ids
-from IONPro.Generator.Utils import get_root_path, get_path, setup_logger
-from IONPro.Generator.Prompts import format_simple_prompt
-from IONPro.Generator.Completions import generate_async_completion
-from IONPro.Generator.RAG import init_rag_query_engine, retrieve_from_index
-from IONPro.Generator.Steps.Utils import RAG_DIAGNOSIS_DIR, SUMMARY_FRAGMENT_DIR
-from IONPro.Generator.Prompts.response_formats import RAGDiagnosis
+from ION.Utils.sources import remove_duplicate_sources, recalibrate_source_ids
+from ION.Utils import get_root_path, get_path, setup_logger
+from ION.Prompts import format_simple_prompt
+from ION.Completions import generate_async_completion
+from ION.RAG import init_rag_query_engine, retrieve_from_index
+from ION.Steps.Utils import RAG_DIAGNOSIS_DIR, SUMMARY_FRAGMENT_DIR
+from ION.Prompts.response_formats import RAGDiagnosis
 import os
 import sys
 import json

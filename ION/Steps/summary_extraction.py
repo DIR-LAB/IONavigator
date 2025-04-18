@@ -1,13 +1,13 @@
-from IONPro.Generator.Steps.Utils import (get_darshan_modules, 
+from ION.Steps.Utils import (get_darshan_modules, 
                                 extract_class_methods, 
                                 process_trace_header, 
                                 summarize_trace_header,
                                 DarshanModules,
                                 SUMMARY_FRAGMENT_DIR
 )
-from IONPro.Generator.Completions import generate_async_completion
-from IONPro.Generator.Prompts import format_simple_prompt
-from IONPro.Generator.Utils import get_root_path, setup_logger
+from ION.Completions import generate_async_completion
+from ION.Prompts import format_simple_prompt
+from ION.Utils import get_root_path, setup_logger
 
 import asyncio
 import aiofiles

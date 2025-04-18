@@ -11,9 +11,9 @@ import shutil
 import sys
 import json
 from tree_utils import parse_dir_tree
-from IONPro.Generator.Completions import get_completion_queue
-from IONPro.Generator.Utils import get_config
-from IONPro.Generator.Steps import (
+from ION.Completions import get_completion_queue
+from ION.Utils import get_config
+from ION.Steps import (
     extract_summary_info, 
     generate_rag_diagnosis, 
     intra_module_merge, 
@@ -24,7 +24,7 @@ import asyncio
 from datetime import datetime
 import traceback
 IONPRO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-IONPRO_CONFIG_PATH = os.path.join(IONPRO_ROOT, "IONPro/Configs/default_config.json")
+IONPRO_CONFIG_PATH = os.path.join(IONPRO_ROOT, "configs/default_config.json")
 CONFIG = get_config(IONPRO_CONFIG_PATH)
 
 ANALYSIS_DIR = "./tmp_analysis"

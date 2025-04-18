@@ -1,13 +1,12 @@
-import sys
 import os
 import json
 import asyncio
 import aiofiles
 import uuid
-from IONPro.Generator.Utils import get_root_path, get_path, setup_logger
-from IONPro.Generator.Prompts import format_merge_prompt, MergedDiagnosis
-from IONPro.Generator.Completions import generate_async_completion
-from IONPro.Generator.Steps.Utils import (
+from ION.Utils import get_root_path, get_path, setup_logger
+from ION.Prompts import format_merge_prompt, MergedDiagnosis
+from ION.Completions import generate_async_completion
+from ION.Steps.Utils import (
     correct_source_format, 
     RAG_DIAGNOSIS_DIR, 
     INTRA_MODULE_MERGE_DIR, 

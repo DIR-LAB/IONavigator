@@ -1,0 +1,31 @@
+{
+    "trace_path": "",
+    "analysis_root": "",
+    "default_model": "gpt-4o-mini",
+    "steps": {
+        "summary_extraction": {
+            "model": "gpt-4o-mini"
+        },
+        "rag_diagnosis": {
+            "model": "anthropic/claude-3-7-sonnet-20250219"
+        },
+        "intra_module_merge": {
+            "model": "anthropic/claude-3-7-sonnet-20250219"
+        },
+        "inter_module_merge": {
+            "model": "anthropic/claude-3-7-sonnet-20250219"
+        },
+        "output_refinement": {
+            "model": "anthropic/claude-3-7-sonnet-20250219"
+        }
+    },
+    "rate_limit": 50,
+    "tpm_limit": 30000,
+    "RAG": {
+        "enabled": true,
+        "rag_index_dir": "ION/Index/combined_data_llama_index_db_storage_chatgpt3.5",
+        "rag_source_data_dir": "ION/Index/combined",
+        "embedding_model": "text-embedding-3-large",
+        "reset_index": false
+    }
+}

@@ -15,7 +15,7 @@ from werkzeug.utils import secure_filename
 from datetime import datetime
 import io
 from darshan_utils.log_parser import verify_and_parse_darshan_log
-from src.types import (
+from obj_types import (
     User, ChatMessage, ChatHistory, TraceMetadata, 
     TraceDiagnosis, APIResponse, UploadTraceResponse, UserResponse
 )
@@ -23,7 +23,8 @@ from io import StringIO, BytesIO
 import sys
 sys.path.append('../../..')
 from task_manager import task_manager
-from IONPro.Generator.Steps import json_to_html, md_to_html
+from ION.Steps import json_to_html, md_to_html
+from ion_extractor.parsers.utils import load_darshan_log
 
 
 ANALYSIS_DIR = "./tmp_analysis"
@@ -381,7 +382,6 @@ def handle_message(data):
             }
             messages.append(new_message)
             socketio.emit('receive_message', new_message)
-
             for tool_call in completion_message.tool_calls:
                 function_name = tool_call.function.name
                 call_id = tool_call.id
@@ -422,7 +422,7 @@ def handle_message(data):
     finally:
         socketio.emit('response_complete')
 
-ALLOWED_EXTENSIONS = {'txt'}
+ALLOWED_EXTENSIONS = {'txt', 'darshan'}
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -446,11 +446,23 @@ def upload_trace():
     if file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
     
+    
     if file and allowed_file(file.filename):
-        # Read the file content
-        file_content = file.read()
+        if file.filename.endswith('.darshan'):
+            # Save the file temporarily to process with darshan-parser
+            temp_path = os.path.join(ANALYSIS_DIR, secure_filename(file.filename))
+            file.save(temp_path)
+            try:
+                file_content = load_darshan_log(temp_path)
+            finally:
+                # Clean up temporary file
+                if os.path.exists(temp_path):
+                    os.remove(temp_path)
+        else:
+            # Read the file content
+            file_content = file.read()
         file_obj = io.BytesIO(file_content)
-        
+            
         filename = secure_filename(file.filename)
         trace_name = os.path.splitext(filename)[0]
         metadata = TraceMetadata(

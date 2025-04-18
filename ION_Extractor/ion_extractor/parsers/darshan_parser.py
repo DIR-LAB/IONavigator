@@ -1,5 +1,5 @@
 import pandas as pd
-from parsers.Utils import load_darshan_log, get_console, formatted_print
+from .utils import load_darshan_log, get_console, formatted_print
 from tqdm import tqdm
 import re
 import json

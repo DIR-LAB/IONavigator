@@ -2,7 +2,7 @@ import os
 import json
 import uuid
 import pandas as pd
-from IONPro.Generator.Utils import get_config, setup_logger
+from ION.Utils import get_config, setup_logger
 
 tree_logger = setup_logger('tree')
 class DiagnosisTable:

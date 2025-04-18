@@ -1,12 +1,8 @@
-import sys
-sys.path.append("../..")
-
 import argparse
-import json
 import asyncio
-from IONPro.Generator.Utils import get_config
-from IONPro.Generator.Completions import get_completion_queue, stop_completion_queue
-from IONPro.Generator.Steps import (
+from ION.Utils import get_config
+from ION.Completions import get_completion_queue, stop_completion_queue
+from ION.Steps import (
     extract_summary_info, 
     generate_rag_diagnosis, 
     intra_module_merge, 
@@ -14,7 +10,7 @@ from IONPro.Generator.Steps import (
     format_diagnosis_html, 
     format_diagnosis_md
 )
-from IONPro.Generator.Utils import get_metrics, count_runtime
+from ION.Utils import get_metrics, count_runtime
 import os
 IONPRO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 

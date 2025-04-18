@@ -1,6 +1,6 @@
 import pandas as pd
-from parsers.Utils.load import load_dxt_log
-from parsers.Utils.console import get_console, formatted_print
+from .utils.load import load_dxt_log
+from .utils.console import get_console, formatted_print
 from tqdm import tqdm
 
 def extract_seq_consec_ops(df):

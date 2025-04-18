@@ -5,10 +5,10 @@ from html import escape
 import html
 import markdown2
 import asyncio
-from IONPro.Generator.Prompts import format_simple_prompt
-from IONPro.Generator.Completions import generate_async_completion
-from IONPro.Generator.Utils import get_root_path, get_path, setup_logger
-from IONPro.Generator.Steps.Utils import FINAL_DIAGNOSIS_DIR, FINAL_DIAGNOSIS_NAME
+from ION.Prompts import format_simple_prompt
+from ION.Completions import generate_async_completion
+from ION.Utils import get_root_path, get_path, setup_logger
+from ION.Steps.Utils import FINAL_DIAGNOSIS_DIR, FINAL_DIAGNOSIS_NAME
 
 output_refinement_logger = setup_logger("output_refinement")
 
