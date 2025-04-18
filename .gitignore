@@ -174,3 +174,5 @@ cython_debug/
 .pypirc
 
 ION/Index/**/*.json
+#ignore node modules
+**/node_modules/**
