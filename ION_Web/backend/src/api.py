@@ -463,10 +463,13 @@ def upload_trace():
             
             # Save the file temporarily to process with darshan-parser
             temp_path = os.path.join(ANALYSIS_DIR, secure_filename(file.filename))
+            print(f"temp_path: {temp_path}")
             try:
                 with open(temp_path, 'wb') as f:
                     f.write(file_content)
-                file_content_parsed = load_darshan_log(temp_path)
+                file_content = load_darshan_log(temp_path)
+                print(f"file_content: {file_content}")
+
             except (IOError, OSError) as e:
                 return jsonify({'error': f'Failed to save temporary file: {str(e)}'}), 500
             finally:
