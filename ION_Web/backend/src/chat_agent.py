@@ -5,6 +5,7 @@ from LLM.completions import generate_completion
 import asyncio
 from service_config import s3_client
 import shutil
+import nest_asyncio
 
 CHAT_MODEL = "gpt-4.1-mini"
 
@@ -28,6 +29,9 @@ You must make note of these important points:
 
 
 def initialize_interpreter():
+    # Apply nest_asyncio to allow nested event loops
+    nest_asyncio.apply()
+    
     interpreter = OpenInterpreter(sync_computer=True)
     interpreter.llm.model = "anthropic/claude-3-7-sonnet-20250219"
     interpreter.auto_run = True
@@ -107,10 +111,20 @@ def generate_and_execute_code_from_task(task_description: str, trace_name: str, 
         darshan_modules = get_darshan_modules(tmp_dir)
         setup_code = prepare_session(darshan_modules)
         interpreter = initialize_interpreter()
+        
+        # Create a new event loop for this thread if needed
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+        
+        # Run the interpreter
         interpreter.computer.run("python", setup_code, display=True)
         interpreter_prompt = format_interpreter_prompt(task_description, setup_code)
         interpreter.chat(interpreter_prompt)
         messages = interpreter.messages
+        
         with open("messages.json", "w") as f:
             json.dump(messages, f, indent=4)  
     except Exception as e:
