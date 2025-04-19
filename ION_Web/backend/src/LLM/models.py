@@ -10,6 +10,16 @@ SUPPORTED_MODELS = {
         "rate_limit": 60,
         "model": "gpt-4o-mini"
     },
+    "gpt-4.1-mini": {
+        "tpm_limit": 150000000,
+        "rate_limit": 60,
+        "model": "gpt-4.1-mini"
+    },
+    "gpt-4.1": {
+        "tpm_limit": 30000000,
+        "rate_limit": 60,
+        "model": "gpt-4.1"
+    },
     "anthropic/claude-3-5-sonnet-20240620": {
         "tpm_limit": 32000,
         "rate_limit": 50,

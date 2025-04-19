@@ -31,6 +31,8 @@ const HomePage: React.FC = () => {
   // Move availableModels here so it can be passed to TraceTable
   const availableModels = [
     { value: 'gpt-4o', label: 'GPT-4o' },
+    { value: 'gpt-4.1-mini', label: 'GPT-4.1-mini' },
+    { value: 'gpt-4.1', label: 'GPT-4.1' },
     { value: 'gpt-4o-mini', label: 'GPT-4o-mini' },
     { value: 'anthropic/claude-3-5-sonnet-20240620', label: 'Claude-3.5-Sonnet' },
     { value: 'anthropic/claude-3-7-sonnet-20250219', label: 'Claude-3.7-Sonnet' },
