@@ -1,5 +1,4 @@
 from flask import Flask, request, jsonify
-#import eventlet
 from service_config import mongodb_client, s3_client
 from LLM import get_completion_queue, generate_completion, SYSTEM_PROMPT, SYSTEM_PROMPT_REVISED, get_metrics, SUPPORTED_MODELS
 from chat_agent import TOOLS, TOOL_FUNCTIONS
@@ -27,14 +26,13 @@ from task_manager import task_manager
 from ION.Steps import json_to_html, md_to_html
 from ion_extractor.parsers.utils import load_darshan_log
 
-#eventlet.monkey_patch()
-
 ANALYSIS_DIR = "./tmp_analysis"
 if not os.path.exists(ANALYSIS_DIR):
     os.makedirs(ANALYSIS_DIR)
 
 
 app = Flask(__name__)
+app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024
 socketio = SocketIO(
     app, 
     cors_allowed_origins=["http://127.0.0.1:3000", "http://localhost:3000", "http://3.138.157.186", "http://ec2-3-138-157-186.us-east-2.compute.amazonaws.com"],
