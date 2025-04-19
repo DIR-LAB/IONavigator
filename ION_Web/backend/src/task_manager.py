@@ -147,7 +147,6 @@ class TaskManager:
     def _run_task(self, task: Task):
         analysis_dir = None
         try:
-            # Add debug logging to check the model
             print(f"Starting analysis with model: {task.llm['model']}")
             task.status = TaskStatus.RUNNING
             task.start_time = time.time()
@@ -156,10 +155,9 @@ class TaskManager:
             # Update metadata to running
             self._update_trace_metadata(task, "running")
 
-            # Create and set event loop for this thread
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            self.task_loops[task.task_id] = loop  # Store the loop
+            # Instead of creating a new event loop, use the current one
+            loop = asyncio.get_event_loop()
+            self.task_loops[task.task_id] = loop
 
             # get the trace content from s3
             analysis_dir = os.path.join(ANALYSIS_DIR, task.user_id, task.trace_name)
@@ -247,12 +245,7 @@ class TaskManager:
         finally:
             task.end_time = time.time()
             if task.task_id in self.task_loops:
-                loop = self.task_loops[task.task_id]
-                try:
-                    loop.stop()
-                    loop.close()
-                except Exception as e:
-                    print(f"Error closing event loop: {str(e)}")
+                # Don't try to stop or close the loop since we didn't create it
                 self.task_loops.pop(task.task_id)
                 
             if analysis_dir and os.path.exists(analysis_dir):
@@ -265,7 +258,7 @@ class TaskManager:
 
     def force_stop_task(self, user_id: str, trace_name: str) -> bool:
         """
-        Forcefully stops a task by closing its event loop and cleaning up resources.
+        Forcefully stops a task by cleaning up resources.
         """
         matching_task = None
         for task in self.tasks.values():
@@ -277,14 +270,8 @@ class TaskManager:
             # Mark the task for stopping
             self.stop_requested[matching_task.task_id] = True
             
-            # Force close the event loop if it exists
+            # Remove the loop reference without trying to close it
             if matching_task.task_id in self.task_loops:
-                loop = self.task_loops[matching_task.task_id]
-                try:
-                    loop.stop()
-                    loop.close()
-                except Exception as e:
-                    print(f"Error force closing event loop: {str(e)}")
                 self.task_loops.pop(matching_task.task_id)
 
             # Update task status
