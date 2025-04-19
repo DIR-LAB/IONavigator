@@ -10,7 +10,6 @@ import json
 import re
 import traceback
 from utils.logging import setup_logger
-from flask_socketio import SocketIO, emit
 from werkzeug.utils import secure_filename
 from datetime import datetime
 import io
@@ -33,15 +32,6 @@ if not os.path.exists(ANALYSIS_DIR):
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024
-socketio = SocketIO(
-    app, 
-    cors_allowed_origins=["http://127.0.0.1:3000", "http://localhost:3000", "http://3.138.157.186", "http://ec2-3-138-157-186.us-east-2.compute.amazonaws.com", "ws://ec2-3-138-157-186.us-east-2.compute.amazonaws.com"],
-    async_mode='threading',
-    async_handlers=True,
-    transports=['websocket'],
-    ping_timeout=None,
-    ping_interval=None
-)
 
 CORS(app, resources={
     r"/api/*": {
@@ -345,100 +335,6 @@ def update_history():
     if success:
         return jsonify({'message': message}), status_code
     return jsonify({'error': message}), status_code
-
-@socketio.on('connect')
-def handle_connect():
-    print("Client connected")
-
-@socketio.on('disconnect')
-def handle_disconnect():
-    print("Client disconnected")
-
-def convert_tool_messages(messages):
-    for message in messages:
-        if 'tool_calls' in message:
-            message['tool_calls'] = [ChatCompletionMessageToolCall(**tool_call) for tool_call in message['tool_calls']]
-    return messages
-
-@socketio.on('send_message')
-def handle_message(data):
-    print(f"Received message data: {data}")
-    try:
-        messages = data.get('chat_history')
-        user_id = data.get('user_id')
-        print(f"messages: {messages}")
-        trace_diagnosis = data.get('trace_diagnosis')
-        trace_name = data.get('trace_name')
-        
-        print(f"Processing message with:")
-        print(f"- messages: {messages}")
-        print(f"- trace_name: {trace_name}")
-        
-        trace_dir = os.path.join(user_id, trace_name, 'processed_data')
-        prompt = format_chat_prompt(messages, trace_diagnosis)
-
-        completion_message = generate_completion(
-            CHAT_MODEL,
-            prompt,
-            tools=TOOLS,
-            full_message=True
-        )
-        
-        if completion_message.content:
-            socketio.emit('receive_message', {
-                'role': 'assistant',
-                'content': completion_message.content
-            })
-
-        if completion_message.tool_calls:
-            print(f"completion_message.tool_calls: {completion_message.tool_calls}")
-            print(f"type of completion_message.tool_calls: {type(completion_message.tool_calls)}")
-            new_message = {
-                'role': completion_message.role, 
-                'content': completion_message.content, 
-                'tool_calls': [tool_call.to_dict() for tool_call in completion_message.tool_calls]
-            }
-            messages.append(new_message)
-            socketio.emit('receive_message', new_message)
-            for tool_call in completion_message.tool_calls:
-                function_name = tool_call.function.name
-                call_id = tool_call.id
-                function_to_call = TOOL_FUNCTIONS[function_name]
-                function_args = json.loads(tool_call.function.arguments)
-                function_args['trace_name'] = trace_name
-                function_args['user_id'] = user_id
-                function_result, last_message = function_to_call(**function_args)
-                
-                new_message = {
-                    'role': 'tool',
-                    'content': function_result,
-                    'tool_call_id': call_id
-                }
-                socketio.emit('receive_message', new_message)
-
-                messages.append(new_message)
-
-                prompt = format_chat_prompt(messages, trace_diagnosis)
-                completion_response = generate_completion(
-                    CHAT_MODEL,
-                    prompt
-                )
-                
-                socketio.emit('receive_message', {
-                    'role': 'assistant',
-                    'content': completion_response
-                })
-                messages.append({'role': 'assistant', 'content': completion_response})
-
-        metrics = get_metrics()
-        metrics_logger.info(json.dumps(metrics))
-        
-    except Exception as e:
-        print(f"Error in handle_message: {traceback.format_exc()}")
-        emit('error', {'message': 'An error occurred while processing your message'})
-
-    finally:
-        socketio.emit('response_complete')
 
 ALLOWED_EXTENSIONS = {'txt', 'darshan'}
 
@@ -763,4 +659,4 @@ def update_trace_model():
         return jsonify({'error': 'Failed to update trace model'}), 500
 
 if __name__ == '__main__':
-    socketio.run(app, host='127.0.0.1', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000)

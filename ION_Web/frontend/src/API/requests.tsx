@@ -4,7 +4,7 @@ import { io, Socket } from 'socket.io-client';
 let socket: Socket;
 
 export const initializeSocket = () => {
-  socket = io(process.env.REACT_APP_FLASK_API_BASE_URL || '', {
+  socket = io(process.env.REACT_APP_WEBSOCKET_URL || '', {
     transports: ['websocket'],
     upgrade: false,
     reconnection: true,
