@@ -11,7 +11,7 @@ app = Flask(__name__)
 socketio = SocketIO(
     app, 
     cors_allowed_origins=["http://127.0.0.1:3000", "http://localhost:3000", "http://3.138.157.186", "http://ec2-3-138-157-186.us-east-2.compute.amazonaws.com"],
-    async_mode='eventlet'
+    async_mode='threading'
 )
 
 CHAT_MODEL = "gpt-4.1-mini"
