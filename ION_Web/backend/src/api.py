@@ -37,7 +37,10 @@ socketio = SocketIO(
     app, 
     cors_allowed_origins=["http://127.0.0.1:3000", "http://localhost:3000", "http://3.138.157.186", "http://ec2-3-138-157-186.us-east-2.compute.amazonaws.com", "ws://ec2-3-138-157-186.us-east-2.compute.amazonaws.com"],
     async_mode='threading',
-    async_handlers=True
+    async_handlers=True,
+    transports=['websocket'],
+    ping_timeout=None,
+    ping_interval=None
 )
 
 CORS(app, resources={
