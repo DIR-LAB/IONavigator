@@ -56,8 +56,44 @@ def handle_message(data):
             })
 
         if completion_message.tool_calls:
-            # ... rest of your message handling code ...
-            pass
+            print(f"completion_message.tool_calls: {completion_message.tool_calls}")
+            print(f"type of completion_message.tool_calls: {type(completion_message.tool_calls)}")
+            new_message = {
+                'role': completion_message.role, 
+                'content': completion_message.content, 
+                'tool_calls': [tool_call.to_dict() for tool_call in completion_message.tool_calls]
+            }
+            messages.append(new_message)
+            socketio.emit('receive_message', new_message)
+            for tool_call in completion_message.tool_calls:
+                function_name = tool_call.function.name
+                call_id = tool_call.id
+                function_to_call = TOOL_FUNCTIONS[function_name]
+                function_args = json.loads(tool_call.function.arguments)
+                function_args['trace_name'] = trace_name
+                function_args['user_id'] = user_id
+                function_result, last_message = function_to_call(**function_args)
+                
+                new_message = {
+                    'role': 'tool',
+                    'content': function_result,
+                    'tool_call_id': call_id
+                }
+                socketio.emit('receive_message', new_message)
+
+                messages.append(new_message)
+
+                prompt = format_chat_prompt(messages, trace_diagnosis)
+                completion_response = generate_completion(
+                    CHAT_MODEL,
+                    prompt
+                )
+                
+                socketio.emit('receive_message', {
+                    'role': 'assistant',
+                    'content': completion_response
+                })
+                messages.append({'role': 'assistant', 'content': completion_response})
 
         metrics = get_metrics()
         metrics_logger.info(json.dumps(metrics))
