@@ -155,84 +155,92 @@ class TaskManager:
             # Update metadata to running
             self._update_trace_metadata(task, "running")
 
-            # Instead of creating a new event loop, use the current one
-            loop = asyncio.get_event_loop()
+            # Create and set event loop for this thread
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
             self.task_loops[task.task_id] = loop
 
-            # get the trace content from s3
-            analysis_dir = os.path.join(ANALYSIS_DIR, task.user_id, task.trace_name)
-            if not os.path.exists(analysis_dir):
-                os.makedirs(analysis_dir)
+            try:
+                # get the trace content from s3
+                analysis_dir = os.path.join(ANALYSIS_DIR, task.user_id, task.trace_name)
+                if not os.path.exists(analysis_dir):
+                    os.makedirs(analysis_dir)
 
-            processed_trace_path = f"{task.user_id}/{task.trace_name}/processed_data"
-            objects = s3_client.list_objects(processed_trace_path)
-            modules = []
+                processed_trace_path = f"{task.user_id}/{task.trace_name}/processed_data"
+                objects = s3_client.list_objects(processed_trace_path)
+                modules = []
 
-            for obj in objects:
-                if "header.json" in obj['Key']:
-                    header_json = s3_client.download_file(obj['Key'])
-                    header_json = json.loads(header_json.decode('utf-8'))
-                    with open(os.path.join(analysis_dir, f"header.json"), "w") as f:
-                        json.dump(header_json, f)
-                if obj['Key'].endswith(".csv"):
-                    module_name = obj['Key'].split("/")[-1].split(".")[0]
-                    if module_name not in modules:
-                        modules.append(module_name)
-                    dataframe = s3_client.download_file(obj['Key'])
-                    with open(os.path.join(analysis_dir, f"{module_name}.csv"), "wb") as f:
-                        f.write(dataframe)
-            
-            config = CONFIG.copy()
-            config["trace_path"] = os.path.join(analysis_dir)
-            config["analysis_root"] = os.path.join(analysis_dir, "Output")
-            for step in config["steps"]:
-                config["steps"][step]["model"] = task.llm['model']
-            config["RAG"]["rag_index_dir"] = os.path.join(IONPRO_ROOT, config["RAG"]["rag_index_dir"])
-            config["RAG"]["rag_source_data_dir"] = os.path.join(IONPRO_ROOT, config["RAG"]["rag_source_data_dir"])
+                for obj in objects:
+                    if "header.json" in obj['Key']:
+                        header_json = s3_client.download_file(obj['Key'])
+                        header_json = json.loads(header_json.decode('utf-8'))
+                        with open(os.path.join(analysis_dir, f"header.json"), "w") as f:
+                            json.dump(header_json, f)
+                    if obj['Key'].endswith(".csv"):
+                        module_name = obj['Key'].split("/")[-1].split(".")[0]
+                        if module_name not in modules:
+                            modules.append(module_name)
+                        dataframe = s3_client.download_file(obj['Key'])
+                        with open(os.path.join(analysis_dir, f"{module_name}.csv"), "wb") as f:
+                            f.write(dataframe)
+                
+                config = CONFIG.copy()
+                config["trace_path"] = os.path.join(analysis_dir)
+                config["analysis_root"] = os.path.join(analysis_dir, "Output")
+                for step in config["steps"]:
+                    config["steps"][step]["model"] = task.llm['model']
+                config["RAG"]["rag_index_dir"] = os.path.join(IONPRO_ROOT, config["RAG"]["rag_index_dir"])
+                config["RAG"]["rag_source_data_dir"] = os.path.join(IONPRO_ROOT, config["RAG"]["rag_source_data_dir"])
 
-            get_completion_queue(task.llm["rate_limit"], task.llm["tpm_limit"])
+                get_completion_queue(task.llm["rate_limit"], task.llm["tpm_limit"])
 
-            # Extract summary info
-            print("Extracting summary info")
-            task.progress = 20
-            loop.run_until_complete(extract_summary_info(config))
+                # Extract summary info
+                print("Extracting summary info")
+                task.progress = 20
+                loop.run_until_complete(extract_summary_info(config))
 
-            # Generate RAG diagnosis
-            print("Generating RAG diagnosis")
-            task.progress = 30
-            loop.run_until_complete(generate_rag_diagnosis(config))
+                # Generate RAG diagnosis
+                print("Generating RAG diagnosis")
+                task.progress = 30
+                loop.run_until_complete(generate_rag_diagnosis(config))
 
-            # Intra-module merge
-            print("Intra-module merge")
-            task.progress = 40
-            loop.run_until_complete(intra_module_merge(config))
+                # Intra-module merge
+                print("Intra-module merge")
+                task.progress = 40
+                loop.run_until_complete(intra_module_merge(config))
 
-            # Inter-module merge
-            print("Inter-module merge")
-            task.progress = 50
-            final_diagnosis = loop.run_until_complete(inter_module_merge(config))
+                # Inter-module merge
+                print("Inter-module merge")
+                task.progress = 50
+                final_diagnosis = loop.run_until_complete(inter_module_merge(config))
 
-            # Upload results to S3
-            new_dir = os.path.join(task.user_id, task.trace_name, "Output")
-            output_dir = os.path.join(analysis_dir, "Output")
-            for root, dirs, files in os.walk(output_dir):
-                for file in files:
-                    rel_path = root.split("/")[-1]
-                    s3_path = os.path.join(new_dir, rel_path, file)
-                    with open(os.path.join(root, file), "rb") as f:
-                        s3_client.upload_file(f, s3_path)
-            
-            tree_json = parse_dir_tree(os.path.join(analysis_dir, "Output", task.trace_name))
-            tree_json_file = io.BytesIO(json.dumps(tree_json).encode())
-            s3_client.upload_file(tree_json_file, os.path.join(new_dir, "tree.json"))
+                # Upload results to S3
+                new_dir = os.path.join(task.user_id, task.trace_name, "Output")
+                output_dir = os.path.join(analysis_dir, "Output")
+                for root, dirs, files in os.walk(output_dir):
+                    for file in files:
+                        rel_path = root.split("/")[-1]
+                        s3_path = os.path.join(new_dir, rel_path, file)
+                        with open(os.path.join(root, file), "rb") as f:
+                            s3_client.upload_file(f, s3_path)
+                
+                tree_json = parse_dir_tree(os.path.join(analysis_dir, "Output", task.trace_name))
+                tree_json_file = io.BytesIO(json.dumps(tree_json).encode())
+                s3_client.upload_file(tree_json_file, os.path.join(new_dir, "tree.json"))
 
-            task.result = final_diagnosis
-            task.status = TaskStatus.COMPLETED
-            task.end_time = time.time()
-            
-            # Update metadata to completed
-            self._update_trace_metadata(task, "completed")
-            task.progress = 100
+                task.result = final_diagnosis
+                task.status = TaskStatus.COMPLETED
+                task.end_time = time.time()
+                
+                # Update metadata to completed
+                self._update_trace_metadata(task, "completed")
+                task.progress = 100
+
+            finally:
+                # Clean up the event loop
+                asyncio.set_event_loop(None)
+                loop.close()
+                self.task_loops.pop(task.task_id, None)
 
         except Exception as e:
             print(f"Error running task: {traceback.format_exc()}")
@@ -244,10 +252,6 @@ class TaskManager:
             
         finally:
             task.end_time = time.time()
-            if task.task_id in self.task_loops:
-                # Don't try to stop or close the loop since we didn't create it
-                self.task_loops.pop(task.task_id)
-                
             if analysis_dir and os.path.exists(analysis_dir):
                 try:
                     shutil.rmtree(analysis_dir)
@@ -270,9 +274,20 @@ class TaskManager:
             # Mark the task for stopping
             self.stop_requested[matching_task.task_id] = True
             
-            # Remove the loop reference without trying to close it
-            if matching_task.task_id in self.task_loops:
-                self.task_loops.pop(matching_task.task_id)
+            # Get the loop if it exists
+            loop = self.task_loops.get(matching_task.task_id)
+            if loop:
+                try:
+                    # Stop all running tasks in the loop
+                    for task in asyncio.all_tasks(loop):
+                        task.cancel()
+                    
+                    # Run the loop one last time to process cancellations
+                    loop.call_soon_threadsafe(loop.stop)
+                except Exception as e:
+                    print(f"Error stopping tasks: {str(e)}")
+                finally:
+                    self.task_loops.pop(matching_task.task_id, None)
 
             # Update task status
             matching_task.status = TaskStatus.FAILED
