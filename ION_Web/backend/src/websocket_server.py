@@ -6,12 +6,20 @@ from chat_agent import TOOLS, TOOL_FUNCTIONS
 import json
 import traceback
 from utils.logging import setup_logger
+from concurrent.futures import ThreadPoolExecutor
+import functools
+
+# Create a thread pool for CPU-intensive operations
+tool_executor = ThreadPoolExecutor(max_workers=4)
 
 app = Flask(__name__)
 socketio = SocketIO(
     app, 
     cors_allowed_origins=["http://127.0.0.1:3000", "http://localhost:3000", "http://3.138.157.186", "http://ec2-3-138-157-186.us-east-2.compute.amazonaws.com"],
-    async_mode='threading'
+    async_mode='threading',
+    ping_timeout=60,
+    ping_interval=25,
+    max_http_buffer_size=1024 * 1024
 )
 
 CHAT_MODEL = "gpt-4.1-mini"
@@ -23,6 +31,11 @@ def format_chat_prompt(messages, trace_diagnosis):
     messages = messages[1:]
     system_message = {"role": "system", "content": SYSTEM_PROMPT_REVISED.format(trace_diagnosis=trace_diagnosis['content'])}
     return [system_message] + messages
+
+def run_tool_call(function_name, function_args):
+    """Execute tool call in thread pool"""
+    function_to_call = TOOL_FUNCTIONS[function_name]
+    return function_to_call(**function_args)
 
 @socketio.on('connect')
 def handle_connect():
@@ -56,8 +69,6 @@ def handle_message(data):
             })
 
         if completion_message.tool_calls:
-            print(f"completion_message.tool_calls: {completion_message.tool_calls}")
-            print(f"type of completion_message.tool_calls: {type(completion_message.tool_calls)}")
             new_message = {
                 'role': completion_message.role, 
                 'content': completion_message.content, 
@@ -65,14 +76,17 @@ def handle_message(data):
             }
             messages.append(new_message)
             socketio.emit('receive_message', new_message)
+            
             for tool_call in completion_message.tool_calls:
                 function_name = tool_call.function.name
                 call_id = tool_call.id
-                function_to_call = TOOL_FUNCTIONS[function_name]
                 function_args = json.loads(tool_call.function.arguments)
                 function_args['trace_name'] = trace_name
                 function_args['user_id'] = user_id
-                function_result, last_message = function_to_call(**function_args)
+                
+                # Run CPU-intensive tool call in thread pool
+                future = tool_executor.submit(run_tool_call, function_name, function_args)
+                function_result, last_message = future.result()
                 
                 new_message = {
                     'role': 'tool',
@@ -80,7 +94,6 @@ def handle_message(data):
                     'tool_call_id': call_id
                 }
                 socketio.emit('receive_message', new_message)
-
                 messages.append(new_message)
 
                 prompt = format_chat_prompt(messages, trace_diagnosis)
@@ -106,4 +119,4 @@ def handle_message(data):
         socketio.emit('response_complete')
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=5001)  # Note different port 
+    socketio.run(app, host='0.0.0.0', port=5001) 
