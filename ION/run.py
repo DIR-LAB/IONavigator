@@ -14,7 +14,7 @@ from ion import (
 
 async def main():
     parser = argparse.ArgumentParser(description="IONPro: Intelligent Diagnosis of I/O Performance Issues")
-    parser.add_argument("--config", type=str, default="../Configs/default_config.json", help="Path to the configuration file")
+    parser.add_argument("--config", type=str, default="../configs/default_config.json", help="Path to the configuration file")
     parser.add_argument("--trace_path", type=str, help="Optionally set path to the Darshan trace file from command line (overrides config)")
     args = parser.parse_args()
 

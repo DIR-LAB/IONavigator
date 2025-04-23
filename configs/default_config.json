@@ -1,6 +1,6 @@
 {
     "trace_path": "",
-    "analysis_root": "",
+    "analysis_root": "./ION_Output",
     "default_model": "gpt-4o-mini",
     "steps": {
         "summary_extraction": {
@@ -23,8 +23,8 @@
     "tpm_limit": 30000,
     "RAG": {
         "enabled": true,
-        "rag_index_dir": "ION/Index/combined_data_llama_index_db_storage_chatgpt3.5",
-        "rag_source_data_dir": "ION/Index/combined",
+        "rag_index_dir": "Index/combined_data_llama_index_db_storage_chatgpt3.5",
+        "rag_source_data_dir": "Index/combined",
         "embedding_model": "text-embedding-3-large",
         "reset_index": false
     }

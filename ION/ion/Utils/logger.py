@@ -16,15 +16,15 @@ def parse_level(level):
 
 
 def setup_logger(name):
-    if not os.environ.get('IONPRO_LOG_DIR'):
-        print("IONPRO_LOG_DIR not set, logging to console for", name)
+    if not os.environ.get('ION_LOG_DIR'):
+        print("ION_LOG_DIR not set, logging to console for", name)
         
         # Set up level
-        if not os.environ.get('IONPRO_LOG_LEVEL'):
-            print("IONPRO_LOG_LEVEL not set, using INFO level for", name)
+        if not os.environ.get('ION_LOG_LEVEL'):
+            print("ION_LOG_LEVEL not set, using INFO level for", name)
             level = logging.INFO
         else:
-            level = parse_level(os.environ.get('IONPRO_LOG_LEVEL'))
+            level = parse_level(os.environ.get('ION_LOG_LEVEL'))
         
         # Create logger
         logger = logging.getLogger(name)
@@ -41,12 +41,12 @@ def setup_logger(name):
         
         return logger
 
-    if not os.environ.get('IONPRO_LOG_LEVEL'):
-        print("IONPRO_LOG_LEVEL not set, using INFO level for ", name)
+    if not os.environ.get('ION_LOG_LEVEL'):
+        print("ION_LOG_LEVEL not set, using INFO level for ", name)
         level = logging.INFO
     else:
-        level = parse_level(os.environ.get('IONPRO_LOG_LEVEL'))
-    log_file_path = os.path.join(os.environ.get('IONPRO_LOG_DIR'), "IONPro", f"{name}.log")
+        level = parse_level(os.environ.get('ION_LOG_LEVEL'))
+    log_file_path = os.path.join(os.environ.get('ION_LOG_DIR'), "ION", f"{name}.log")
     if os.path.exists(log_file_path):
         # clear the file
         with open(log_file_path, 'w') as f:
