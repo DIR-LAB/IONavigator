@@ -31,7 +31,7 @@ if not os.path.exists(ANALYSIS_DIR):
 
 
 app = Flask(__name__)
-app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024
+app.config['MAX_CONTENT_LENGTH'] = 1000 * 1024 * 1024
 
 CORS(app, resources={
     r"/api/*": {
