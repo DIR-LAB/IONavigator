@@ -1,22 +1,22 @@
 {
     "trace_path": "",
     "analysis_root": "./ION_Output",
-    "default_model": "gpt-4o-mini",
+    "default_model": "gpt-4.1-mini",
     "steps": {
         "summary_extraction": {
-            "model": "gpt-4o-mini"
+            "model": "gpt-4.1-mini"
         },
         "rag_diagnosis": {
-            "model": "anthropic/claude-3-7-sonnet-20250219"
+            "model": "gpt-4.1-mini"
         },
         "intra_module_merge": {
-            "model": "anthropic/claude-3-7-sonnet-20250219"
+            "model": "gpt-4.1-mini"
         },
         "inter_module_merge": {
-            "model": "anthropic/claude-3-7-sonnet-20250219"
+            "model": "gpt-4.1-mini"
         },
         "output_refinement": {
-            "model": "anthropic/claude-3-7-sonnet-20250219"
+            "model": "gpt-4.1-mini"
         }
     },
     "rate_limit": 50,
