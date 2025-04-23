@@ -173,6 +173,6 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-ION/Index/**/*.json
+ION/ion/Index/**/*.json
 #ignore node modules
 **/node_modules/**
