@@ -2,7 +2,7 @@ from litellm import completion, acompletion, token_counter
 from litellm.exceptions import APIConnectionError
 import os
 
-from ION.Utils import count_completion, count_async_completion, setup_logger
+from ion.Utils import count_completion, count_async_completion, setup_logger
 import asyncio
 import time
 

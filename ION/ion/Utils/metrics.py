@@ -1,5 +1,4 @@
 import functools
-import asyncio
 import time
 
 

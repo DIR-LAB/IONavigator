@@ -1,4 +1,4 @@
-from ION.Utils.sources import extract_and_add_source_root, prepend_source_key_with_root
+from ion.Utils.sources import extract_and_add_source_root, prepend_source_key_with_root
 from .response_formats import RAGDiagnosis
 import json
 DARSHAN_HELPFUL_CONTEXT = (

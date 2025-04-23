@@ -3,11 +3,10 @@ import json
 import asyncio
 import aiofiles
 import uuid
-from ION.Utils import get_root_path, get_path, setup_logger
-from ION.Prompts import format_merge_prompt, MergedDiagnosis
-from ION.Completions import generate_async_completion
-from ION.Steps.Utils import (
-    correct_source_format, 
+from ion.Utils import get_root_path, get_path, setup_logger
+from ion.Prompts import format_merge_prompt, MergedDiagnosis
+from ion.Completions import generate_async_completion
+from ion.Steps.Utils import (
     RAG_DIAGNOSIS_DIR, 
     INTRA_MODULE_MERGE_DIR, 
     INTER_MODULE_MERGE_DIR, 
@@ -41,10 +40,6 @@ async def merge_intra_module_diagnoses(model, default_model, module_name, diagno
     merged_diagnosis = merged_diagnosis_json.diagnosis
     sources_ids = merged_diagnosis_json.sources
     updated_source_dict = {}
-    print(f"prompt: {merge_prompt}\n\n\n")
-    print(f"merged_diagnosis: {merged_diagnosis}\n\n\n")
-    print(f"sources_ids: {sources_ids}\n\n\n")
-    print(f"combined_source_list: {combined_source_list}\n\n\n")
     
     for source_id in sources_ids:
         updated_source_dict[f"Source {source_id}"] = combined_source_list[f"Source {source_id}"]

@@ -1,10 +1,9 @@
-from ION.Utils.sources import remove_duplicate_sources, recalibrate_source_ids
-from ION.Utils import get_root_path, get_path, setup_logger
-from ION.Prompts import format_simple_prompt
-from ION.Completions import generate_async_completion
-from ION.RAG import init_rag_query_engine, retrieve_from_index
-from ION.Steps.Utils import RAG_DIAGNOSIS_DIR, SUMMARY_FRAGMENT_DIR
-from ION.Prompts.response_formats import RAGDiagnosis
+from ion.Utils import get_root_path, get_path, setup_logger
+from ion.Prompts import format_simple_prompt
+from ion.Completions import generate_async_completion
+from ion.RAG import init_rag_query_engine, retrieve_from_index
+from ion.Steps.Utils import RAG_DIAGNOSIS_DIR, SUMMARY_FRAGMENT_DIR
+from ion.Prompts.response_formats import RAGDiagnosis
 import os
 import sys
 import json
@@ -35,7 +34,6 @@ async def run_parallel_source_reflection(model, description, sources):
 
 async def run_rag_diagnosis(model, default_model, description, sources):
     rag_diagnosis_logger.info("Running RAG diagnosis generation")
-    print(description)
     diagnosis_prompt = format_simple_prompt("rag_diagnosis", {"description": description, "sources": sources})
     response = await generate_async_completion(model=model, messages=diagnosis_prompt, response_format=RAGDiagnosis)
     response_json = RAGDiagnosis.model_validate_json(response)

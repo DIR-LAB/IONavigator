@@ -8,7 +8,6 @@ __all__ = ['get_darshan_modules',
            'LUSTRE', 
            'MPIIO',
            'DarshanModules',
-           'correct_source_format',
            'SUMMARY_FRAGMENT_DIR',
            'RAG_DIAGNOSIS_DIR',
            'INTER_MODULE_MERGE_DIR',
@@ -31,7 +30,6 @@ from .darshan_modules import (get_darshan_modules,
                             DarshanModules,
                             )
 
-from .source_correction import correct_source_format
 from .dir_names import (
     SUMMARY_FRAGMENT_DIR, 
     RAG_DIAGNOSIS_DIR, 
