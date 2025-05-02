@@ -176,3 +176,5 @@ cython_debug/
 ION/ion/Index/**/*.json
 #ignore node modules
 **/node_modules/**
+
+test_traces/
