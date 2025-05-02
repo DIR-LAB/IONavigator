@@ -22,7 +22,7 @@ from io import StringIO, BytesIO
 import sys
 sys.path.append('../../..')
 from task_manager import task_manager
-from ION.Steps import json_to_html, md_to_html
+from ion.Steps import json_to_html, md_to_html
 from ion_extractor.parsers.utils import load_darshan_log
 
 ANALYSIS_DIR = "./tmp_analysis"

@@ -11,14 +11,14 @@ import shutil
 import sys
 import json
 from tree_utils import parse_dir_tree
-from ION.Completions import get_completion_queue
-from ION.Utils import get_config
-from ION.Steps import (
+from ion.Completions import get_completion_queue
+from ion.Utils import get_config
+from ion.Steps import (
     extract_summary_info, 
     generate_rag_diagnosis, 
     intra_module_merge, 
-    inter_module_merge, 
-    format_diagnosis_html
+    inter_module_merge,
+    format_diagnosis_md
 )
 import asyncio
 from datetime import datetime
@@ -213,6 +213,11 @@ class TaskManager:
             print("Inter-module merge")
             task.progress = 50
             final_diagnosis = loop.run_until_complete(inter_module_merge(config))
+
+            # Format diagnosis
+            print("Formatting diagnosis")
+            task.progress = 70
+            final_diagnosis = loop.run_until_complete(format_diagnosis_md(config, final_diagnosis))
 
             # Upload results to S3
             new_dir = os.path.join(task.user_id, task.trace_name, "Output")
