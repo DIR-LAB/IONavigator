@@ -400,7 +400,7 @@ def upload_trace():
             trace_description='User uploaded trace',
             upload_date=datetime.now(),
             status='not_started',
-            model='gpt-4o'  # Set default model
+            model='gpt-4.1-mini'  # Set default model
         )
         
         # Upload trace file to S3

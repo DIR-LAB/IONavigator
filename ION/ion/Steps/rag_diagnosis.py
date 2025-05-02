@@ -13,24 +13,6 @@ import time
 
 rag_diagnosis_logger = setup_logger("rag_diagnosis")
 
-"""
-async def run_parallel_source_reflection(model, description, sources):
-    rag_diagnosis_logger.info(f"Running parallel source reflection for {len(sources)} sources")
-    source_reflection_prompts = [format_simple_prompt("source_reflection", {"description": description, "source": source["text"]}) for source in sources]
-    responses = await asyncio.gather(*[generate_async_completion(model=model, messages=prompt) for prompt in source_reflection_prompts])
-    useful_sources = []
-    source_dict = {}
-    source_dict_idx = 1
-    for idx, response in enumerate(responses):
-        if "yes" in response.lower():
-            useful_sources.append(sources[idx])
-            source_dict[f"Source {source_dict_idx}"] = sources[idx]
-            source_dict_idx += 1
-        else:
-            rag_diagnosis_logger.debug(f"Source {idx+1} is not useful")
-    rag_diagnosis_logger.info(f"Found {len(useful_sources)} useful sources")
-    return source_dict
-"""
 
 async def run_rag_diagnosis(model, default_model, description, sources):
     rag_diagnosis_logger.info("Running RAG diagnosis generation")
@@ -45,11 +27,6 @@ async def run_rag_diagnosis(model, default_model, description, sources):
         source_dict[f"Source {source_dict_idx}"] = sources[f"Source {source_id}"]
         source_dict_idx += 1
     
-
-
-    #rag_diagnosis_logger.info("Running source correction")
-    #source_correction_prompt = format_simple_prompt("source_correction", {"text_with_sources": response})
-    #source_correction_response = await generate_async_completion(model=default_model, messages=source_correction_prompt)
 
     return diagnosis, source_dict
 
@@ -89,9 +66,6 @@ async def generate_rag_diagnosis(config):
                 _, source_text = source.text.split(":")[0], source.text.split(":")[1]
                 file_name = source.metadata['file_name'].replace('.md', '').replace('\uf03a', '/').replace('\u2215', '/').replace('\u2044', '/')
                 source_dict[f"Source {idx+1}"] = {"file": file_name, "text": source_text}
-
-            #rag_diagnosis_logger.debug("Running source reflection")
-            #useful_sources = await run_parallel_source_reflection(default_model, description, source_list)
 
             rag_diagnosis_logger.debug("Running RAG diagnosis")
             diagnosis, updated_source_dict = await run_rag_diagnosis(model, default_model, description, source_dict)

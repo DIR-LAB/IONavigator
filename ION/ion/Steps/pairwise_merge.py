@@ -4,7 +4,7 @@ import asyncio
 import aiofiles
 import uuid
 from ion.Utils import get_root_path, get_path, setup_logger
-from ion.Prompts import format_merge_prompt, MergedDiagnosis
+from ion.Prompts import format_merge_prompt, RAGDiagnosis
 from ion.Completions import generate_async_completion
 from ion.Steps.Utils import (
     RAG_DIAGNOSIS_DIR, 
@@ -35,8 +35,8 @@ async def merge_intra_module_diagnoses(model, default_model, module_name, diagno
             
     
     intra_merge_logger.debug(f"Generated merge prompt with ID: {unique_id}")
-    merged_diagnosis = await generate_async_completion(model, merge_prompt, response_format=MergedDiagnosis)
-    merged_diagnosis_json = MergedDiagnosis.model_validate_json(merged_diagnosis)
+    merged_diagnosis = await generate_async_completion(model, merge_prompt, response_format=RAGDiagnosis)
+    merged_diagnosis_json = RAGDiagnosis.model_validate_json(merged_diagnosis)
     merged_diagnosis = merged_diagnosis_json.diagnosis
     sources_ids = merged_diagnosis_json.sources
     updated_source_dict = {}
@@ -171,8 +171,8 @@ async def merge_inter_module_diagnoses(model, default_model, module_names, modul
             merge_prompt, combined_sources = format_merge_prompt(f"{inject_string}inter_module_merge", module1_data, module2_data, {"all_modules": module_names})
     
     inter_merge_logger.debug(f"Generated merge prompt with ID: {unique_id}")
-    merged_diagnosis = await generate_async_completion(model, merge_prompt, response_format=MergedDiagnosis)
-    merged_diagnosis_json = MergedDiagnosis.model_validate_json(merged_diagnosis)
+    merged_diagnosis = await generate_async_completion(model, merge_prompt, response_format=RAGDiagnosis)
+    merged_diagnosis_json = RAGDiagnosis.model_validate_json(merged_diagnosis)
     merged_diagnosis = merged_diagnosis_json.diagnosis
     sources_ids = merged_diagnosis_json.sources
     updated_source_dict = {}

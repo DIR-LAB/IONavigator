@@ -137,7 +137,7 @@ const HomePage: React.FC = () => {
     if (!userId) return;
     
     try {
-        const taskId = await startAnalysis(trace.trace_name, userId, trace.model || 'gpt-4o');
+        const taskId = await startAnalysis(trace.trace_name, userId, trace.model || 'gpt-4.1-mini');
         
         setAnalysisStatuses(prev => ({
             ...prev,

@@ -27,7 +27,7 @@ async def main():
     get_completion_queue(config["rate_limit"], config["tpm_limit"])
     config = set_rag_dirs(config)
     
-    final_diagnosis = await run_ION(config)
+    final_diagnosis = await run_ION(config, format_md = True)
 
     print("final metrics: ", get_metrics())
 

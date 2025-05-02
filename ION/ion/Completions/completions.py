@@ -1,10 +1,13 @@
 from litellm import completion, acompletion, token_counter
 from litellm.exceptions import APIConnectionError
+import litellm
 import os
-
+import json
 from ion.Utils import count_completion, count_async_completion, setup_logger
 import asyncio
 import time
+
+litellm._turn_on_debug()
 
 os.environ['LITELLM_LOG'] = 'DEBUG'
 
@@ -195,6 +198,8 @@ def generate_completion(model, messages, token_limit=None, retry=True, tools=Non
 async def generate_async_completion(model, messages, token_limit=None, retry=True, response_format=None):
     input_tokens = token_counter(model=model, messages=messages)
     try:
+        if "samba" in model and response_format:
+                response_format = { "type": "json_object"}
         if token_limit:
             max_response_tokens = token_limit - input_tokens - 40
             estimated_tokens = input_tokens + max_response_tokens
@@ -208,13 +213,14 @@ async def generate_async_completion(model, messages, token_limit=None, retry=Tru
         time.sleep(0.5)
         completions_logger.warning("APIConnectionError: Retrying...")
         if retry:
+            if "samba" in model and response_format:
+                response_format = { "type": "json_object"}
             response = await generate_async_completion(model, messages, token_limit, retry=False, response_format=response_format)
         else:
             raise e
         cost = 0
         completion_result = {"model": model, "cost": cost, "response": response}
         return completion_result
-
     completion_result = {"model": model, "cost": cost, "response": response.choices[0].message.content}
     return completion_result
 
