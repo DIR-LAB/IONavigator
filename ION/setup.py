@@ -10,8 +10,10 @@ setup(
     packages=find_packages(),
     install_requires=requirements,
     description="ION is a tool for analyzing Darshan logs.",
-    python_requires='>=3.10',
+    python_requires='>=3.8',
     classifiers=[
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
