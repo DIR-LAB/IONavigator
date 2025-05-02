@@ -178,3 +178,5 @@ ION/ion/Index/**/*.json
 **/node_modules/**
 
 test_traces/
+
+ION/ION_Output/
