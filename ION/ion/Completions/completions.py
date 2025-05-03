@@ -7,9 +7,6 @@ from ion.Utils import count_completion, count_async_completion, setup_logger
 import asyncio
 import time
 
-litellm._turn_on_debug()
-
-os.environ['LITELLM_LOG'] = 'DEBUG'
 
 completions_logger = setup_logger("completions")
 
