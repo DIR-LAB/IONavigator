@@ -20,6 +20,7 @@ from ion.Steps import (
     inter_module_merge,
     format_diagnosis_md
 )
+from ion import set_rag_dirs
 import asyncio
 from datetime import datetime
 import traceback
@@ -189,10 +190,10 @@ class TaskManager:
             config["analysis_root"] = os.path.join(analysis_dir, "Output")
             for step in config["steps"]:
                 config["steps"][step]["model"] = task.llm['model']
-            config["RAG"]["rag_index_dir"] = os.path.join(IONPRO_ROOT, config["RAG"]["rag_index_dir"])
-            config["RAG"]["rag_source_data_dir"] = os.path.join(IONPRO_ROOT, config["RAG"]["rag_source_data_dir"])
 
             get_completion_queue(task.llm["rate_limit"], task.llm["tpm_limit"])
+
+            config = set_rag_dirs(config)
 
             # Extract summary info
             print("Extracting summary info")
