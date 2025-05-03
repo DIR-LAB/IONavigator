@@ -225,7 +225,7 @@ async def format_diagnosis_md(config, final_diagnosis=None):
     if markdown_content.endswith("```"):
         markdown_content = markdown_content[:-3]
     reformatted_diagnosis = {"diagnosis": markdown_content, "sources": data["sources"]}
-    output_file = os.path.join(root_path, FINAL_DIAGNOSIS_DIR, f"md_formatted_{FINAL_DIAGNOSIS_NAME}.json")
+    output_file = os.path.join(root_path, FINAL_DIAGNOSIS_DIR, f"{FINAL_DIAGNOSIS_NAME}.json")
     with open(output_file, "w") as f:
         json.dump(reformatted_diagnosis, f, indent=4)
 
