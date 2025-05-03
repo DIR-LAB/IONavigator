@@ -20,7 +20,7 @@
         }
     },
     "rate_limit": 50,
-    "tpm_limit": 30000,
+    "tpm_limit": 3000000,
     "RAG": {
         "enabled": true,
         "rag_index_dir": "Index/combined_data_llama_index_db_storage_chatgpt3.5",
