@@ -6,6 +6,7 @@ __all__ = ['extract_and_add_source_root',
            'create_merged_sources',
            'remove_erroneous_sources',
            'get_config',
+           'get_models',
            'get_root_path',
            'get_path',
            'count_completion',
@@ -24,7 +25,7 @@ from .sources import (extract_and_add_source_root,
                         remove_erroneous_sources
                         )
 
-from .config import get_config, get_root_path, get_path
+from .config import get_config, get_models, get_root_path, get_path
 from .metrics import count_completion, count_async_completion, count_runtime, get_metrics
 from .logger import setup_logger
 
