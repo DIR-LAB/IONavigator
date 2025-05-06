@@ -5,7 +5,7 @@
             "litellm_params": {
                 "model": "gpt-4.1",
                 "tpm": 3000000,
-                "rpm": 3000
+                "rpm": 5000
             }
         },
         {
@@ -13,7 +13,7 @@
             "litellm_params": {
                 "model": "gpt-4.1-mini",
                 "tpm": 3000000,
-                "rpm": 3000
+                "rpm": 5000
             }
         },
         {
@@ -21,7 +21,7 @@
             "litellm_params": {
                 "model": "gpt-4o-mini",
                 "tpm": 3000000,
-                "rpm": 3000
+                "rpm": 5000
             }
         },
         {
@@ -29,7 +29,23 @@
             "litellm_params": {
                 "model": "gpt-4o",
                 "tpm": 3000000,
-                "rpm": 3000
+                "rpm": 5000
+            }
+        },
+        {
+            "model_name": "anthropic/claude-3-5-sonnet-20240620",
+            "litellm_params": {
+                "model": "anthropic/claude-3-5-sonnet-20240620",
+                "tpm": 200000,
+                "rate_limit": 4000
+            }
+        },
+        {
+            "model_name": "anthropic/claude-3-7-sonnet-20250219",
+            "litellm_params": {
+                "model": "anthropic/claude-3-7-sonnet-20250219",
+                "tpm": 200000,
+                "rate_limit": 4000
             }
         }
     ]  
