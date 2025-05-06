@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { fetchTraceDiagnosis, updateFeedback, fetchSampleQuestions, initializeSocket, sendChatMessage } from '../API/requests';
 import { ChatWindowProps, traceDiagnosis, chatHistory } from '../interface/interfaces';
 import botIcon from '../assets/bot-icon.svg';
@@ -231,6 +232,19 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ selectedTrace }) => {
                     width: 20px; /* Adjust the width as needed */
                     height: 20px; /* Adjust the height as needed */
                 }
+                .chat-bubble table {
+                    border-collapse: collapse;
+                    width: 100%;
+                    margin: 8px 0;
+                }
+                .chat-bubble th, .chat-bubble td {
+                    border: 1px solid #ccc;
+                    padding: 6px 10px;
+                    text-align: left;
+                }
+                .chat-bubble th {
+                    background: #f5f5f5;
+                }
             `}</style>
             <h2>Chat</h2>
             <div className="chat-history" ref={chatHistoryRef}>
@@ -260,7 +274,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ selectedTrace }) => {
                                     </>
                                 ) : chat.role === 'assistant' ? (
                                     <>
-                                        <ReactMarkdown>{chat.content}</ReactMarkdown>
+                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{chat.content}</ReactMarkdown>
                                         {chat.sources && (
                                             <button onClick={toggleExpand}>
                                                 {isExpanded ? 'Hide Sources' : 'Show Sources'}

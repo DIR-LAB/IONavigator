@@ -1,7 +1,7 @@
 from interpreter import OpenInterpreter
 import json
 import os
-from LLM.completions import generate_completion
+from ion.Completions import generate_completion
 import asyncio
 from service_config import s3_client
 import shutil
