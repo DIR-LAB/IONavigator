@@ -1,7 +1,8 @@
 from flask import Flask
 from flask_socketio import SocketIO, emit
 from flask_cors import CORS
-from ion.Completions import get_router, generate_completion, SYSTEM_PROMPT_REVISED
+from ion.Completions import get_router, generate_completion
+from LLM import SYSTEM_PROMPT_REVISED
 from ion.Utils import get_metrics
 from chat_agent import TOOLS, TOOL_FUNCTIONS
 import json
