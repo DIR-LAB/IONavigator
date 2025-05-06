@@ -1,0 +1,36 @@
+{
+    "models": [
+        {
+            "model_name": "gpt-4.1",
+            "litellm_params": {
+                "model": "gpt-4.1",
+                "tpm": 3000000,
+                "rpm": 3000
+            }
+        },
+        {
+            "model_name": "gpt-4.1-mini",
+            "litellm_params": {
+                "model": "gpt-4.1-mini",
+                "tpm": 3000000,
+                "rpm": 3000
+            }
+        },
+        {
+            "model_name": "gpt-4o-mini",
+            "litellm_params": {
+                "model": "gpt-4o-mini",
+                "tpm": 3000000,
+                "rpm": 3000
+            }
+        },
+        {
+            "model_name": "gpt-4o",
+            "litellm_params": {
+                "model": "gpt-4o",
+                "tpm": 3000000,
+                "rpm": 3000
+            }
+        }
+    ]  
+}
