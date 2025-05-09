@@ -5,3 +5,8 @@ theme:
 
 nav:
   - Home: index.md
+  - ION Core: ion_process.md
+  - ION CLI: ion_cli.md
+  - ION Extractor: ion_extractor.md
+  - ION Web: ion_web.md
+  - TraceBench: tracebench.md
