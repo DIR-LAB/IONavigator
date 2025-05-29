@@ -6,6 +6,10 @@ def get_config(config_path):
     with open(config_path, 'r') as f:
         return json.load(f)
 
+def get_models(models_path):
+    with open(models_path, 'r') as f:
+        return json.load(f)["models"]
+
 
 def get_root_path(config):
     # This platform agnostic (works on both Mac and Windows) on Mac, and gets the base name of the directory regardless if it uses '/' or '\'

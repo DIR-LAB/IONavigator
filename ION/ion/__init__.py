@@ -6,8 +6,8 @@ from .Steps import (
     inter_module_merge, 
     format_diagnosis_html
 )
-from .Utils import get_config, get_metrics, count_runtime
-from .Completions import get_completion_queue, stop_completion_queue
+from .Utils import get_config, get_metrics, count_runtime, get_models
+from .Completions import get_router
 
 
 __all__ = [
@@ -21,6 +21,6 @@ __all__ = [
     "get_config",
     "get_metrics",
     "count_runtime",
-    "get_completion_queue",
-    "stop_completion_queue"
+    "get_models",
+    "get_router"
 ]

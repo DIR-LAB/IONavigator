@@ -11,8 +11,8 @@ import shutil
 import sys
 import json
 from tree_utils import parse_dir_tree
-from ion.Completions import get_completion_queue
-from ion.Utils import get_config
+from ion.Completions import get_router
+from ion.Utils import get_config, get_models
 from ion.Steps import (
     extract_summary_info, 
     generate_rag_diagnosis, 
@@ -24,9 +24,14 @@ from ion import set_rag_dirs
 import asyncio
 from datetime import datetime
 import traceback
-IONPRO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-IONPRO_CONFIG_PATH = os.path.join(IONPRO_ROOT, "configs/default_config.json")
-CONFIG = get_config(IONPRO_CONFIG_PATH)
+ION_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+ION_CONFIG_PATH = os.path.join(ION_ROOT, "configs/default_config.json")
+ION_MODELS_PATH = os.path.join(ION_ROOT, "configs/models.json")
+CONFIG = get_config(ION_CONFIG_PATH)
+MODELS = get_models(ION_MODELS_PATH)
+
+get_router(MODELS)
+
 
 ANALYSIS_DIR = "./tmp_analysis"
 if not os.path.exists(ANALYSIS_DIR):
@@ -191,7 +196,6 @@ class TaskManager:
             for step in config["steps"]:
                 config["steps"][step]["model"] = task.llm['model']
 
-            get_completion_queue(task.llm["rate_limit"], task.llm["tpm_limit"])
 
             config = set_rag_dirs(config)
 
