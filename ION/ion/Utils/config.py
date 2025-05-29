@@ -8,8 +8,12 @@ def get_config(config_path):
 
 
 def get_root_path(config):
-    application = config["trace_path"].split("/")[-1]
-    return os.path.join(config["analysis_root"], application)
+    # This platform agnostic (works on both Mac and Windows) on Mac, and gets the base name of the directory regardless if it uses '/' or '\'
+    # application = config["trace_path"].split("/")[-1]
+    application = os.path.basename(config["trace_path"])  
+    result_path = os.path.join(config['analysis_root'], application)
+
+    return result_path
 
 
 def get_path(list_of_dirs):
