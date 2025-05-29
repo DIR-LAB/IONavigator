@@ -1,7 +1,47 @@
-site_name: I/O Navigator
-site_url:
+site_name: IONavigator
 theme:
   name: material
+  palette:
+    - scheme: default
+      primary: blue
+      accent: indigo
+    - scheme: slate
+      primary: blue
+      accent: lime
+      toggle:
+        icon: material/brightness-6
+        name: Switch to dark mode
+  font:
+    text: Roboto
+    code: Roboto Mono
+features:
+  - navigation.tabs
+  - navigation.sections
+  - toc.integrate
+  - content.code.annotate
 
 nav:
-  - Home: index.md
+  - Overview: index.md
+  - Architecture: architecture.md
+  - Components: components.md
+  - ION Web Backend:
+      - API Endpoints: backend_api.md
+      - Task Management: backend_tasks.md
+      - Chat Agent: chat_agent.md
+      - WebSocket Server: websocket.md
+      - LLM Integration: llm_integration.md
+  - ION Web Frontend:
+      - Home Page: frontend_home.md
+      - API Requests: frontend_api.md
+  - ION Core:
+      - Entrypoint & Configuration: ion_core_config.md
+      - Analysis Workflow: analysis_workflow.md
+      - Utility Functions: utility_functions.md
+  - Trace Analysis:
+      - Configuration: trace_config.md
+      - RAG System: rag.md
+  - User Interaction Flow: user_flow.md
+  - Component Interactions: component_diagram.md
+  - Code Organization:
+      - Key Files: key_files.md
+      - Technologies Used: tech_used.md
