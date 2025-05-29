@@ -77,7 +77,7 @@ def main(**kwargs):
             diagnosis_file = Path(os.path.join('..', 'ION', analysis_root, name, 'final_diagnosis', 'final_diagnosis.json')).resolve()
             if os.path.exists(diagnosis_file):
                 results[name] = str(diagnosis_file)
-                console.print(f"[purple]Found diagnosis file: [link=file://{diagnosis_file}]{diagnosis_file}[/link][/purple]")
+                console.print(Panel(f"The file is located at [medium_orchid][link=file://{diagnosis_file}]{diagnosis_file}[/link][/medium_orchid]", title = 'Found diagnosis file', expand = False, border_style = 'purple'))
             else:
                 console.print(f"[yellow]:warning: No diagnosis file found for {name} at {diagnosis_file}[/yellow]")
         else:
