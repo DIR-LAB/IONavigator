@@ -3,7 +3,7 @@ theme:
   name: material
   palette:
     - scheme: default
-      primary: blue
+      primary: navy blue
       accent: indigo
     - scheme: slate
       primary: blue
@@ -12,7 +12,7 @@ theme:
         icon: material/brightness-6
         name: Switch to dark mode
   font:
-    text: Roboto
+    text: palatino linotype
     code: Roboto Mono
 features:
   - navigation.tabs

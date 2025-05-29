@@ -57,7 +57,7 @@ Flask-based API server that provides:
 - WebSocket server for real-time chat communication
 - Task management for asynchronous trace analysis
 - Integration with storage (S3) and database (MongoDB) services
-
+---
 ## ION Core Engine
 The analysis engine responsible for:
 
@@ -65,14 +65,14 @@ The analysis engine responsible for:
 - Generating diagnoses using Retrieval-Augmented Generation (RAG)
 - Merging analysis results within and across modules
 - Producing final, refined diagnosis outputs
-
+---
 ## Data Flow
 
 
 <p alimkgn="center">
   <img src="dataflow.png" alt="Data Flow" width="100%">
 </p>
-
+---
 ## Analysis Process
 
 ### 1. Summary Extraction
@@ -105,12 +105,14 @@ IONavigator produces:
 
 You can find these in the `ION_Output` directory after execution.
 
+---
 
 ## Component Interaction
 - The typical Component interaction with IONavigator follows this sequence:
 <p alimkgn="center">
   <img src="componentinteraction.png" alt="Component Interaction" width="100%">
 </p>
+---
 
 ## User Interaction 
 
@@ -120,6 +122,7 @@ You can find these in the `ION_Output` directory after execution.
 <p alimkgn="center">
   <img src="userinteractionflow.png" alt="User Interaction" width="100%">
 </p>
+---
 
 ## Technologies Used
 
