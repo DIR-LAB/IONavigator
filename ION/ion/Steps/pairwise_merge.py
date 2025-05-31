@@ -3,7 +3,7 @@ import asyncio
 import aiofiles
 import uuid
 from ion.Utils import get_root_path, get_path, setup_logger
-from ion.Prompts import format_merge_prompt, MergedDiagnosis
+from ion.Prompts import format_merge_prompt, RAGDiagnosis
 from ion.Completions import generate_async_completion
 from ion.Steps.Utils import (
     RAG_DIAGNOSIS_DIR,

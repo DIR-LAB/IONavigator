@@ -1,13 +1,28 @@
 from flask import Flask
 from flask_socketio import SocketIO, emit
 from flask_cors import CORS
-from LLM import generate_completion, get_metrics, SYSTEM_PROMPT_REVISED
+from ion.Completions import get_router, generate_completion
+from LLM import SYSTEM_PROMPT_REVISED
+from ion.Utils import get_metrics
 from chat_agent import TOOLS, TOOL_FUNCTIONS
 import json
 import traceback
 from utils.logging import setup_logger
 from concurrent.futures import ThreadPoolExecutor
 import functools
+
+models_list = [
+        {
+        "model_name": "gpt-4.1-mini",
+        "litellm_params": {
+            "model": "gpt-4.1-mini",
+            "tpm": 3000000,
+            "rpm": 3000
+        }
+    }
+]
+
+get_router(models_list)
 
 # Create a thread pool for CPU-intensive operations
 tool_executor = ThreadPoolExecutor(max_workers=4)

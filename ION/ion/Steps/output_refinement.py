@@ -33,7 +33,8 @@ def md_to_html(md_content):
     escaped_content = re.sub(r'(\w+)_(\w+)', r'\1\\_\2', md_content)
     
     # Convert markdown to HTML
-    html_content = markdown2.markdown(escaped_content, safe_mode='escape', extras=['fenced-code-blocks'])
+    md_content = fix_impact_blocks(md_content)
+    html_content = markdown2.markdown(md_content, safe_mode='escape', extras=['fenced-code-blocks', 'tables'])
     
     # Unescape the underscores in the HTML content
     final_html = html_content.replace('\\_', '_')
@@ -69,7 +70,7 @@ def json_to_html(diagnosis_dict):
         return match.group(0)
     
     summary_with_tooltips = re.sub(r'\[(\d+)\]', replace_citation, summary)
-    html_summary = markdown2.markdown(summary_with_tooltips, safe_mode='escape')
+    html_summary = markdown2.markdown(summary_with_tooltips, safe_mode='escape', extras=['tables'])
 
     final_html = f"""
         <!DOCTYPE html>
@@ -118,6 +119,19 @@ def json_to_html(diagnosis_dict):
                 .source-file {{
                     font-weight: bold;
                     font-style: italic;
+                }}
+                table {{
+                    border-collapse: collapse;
+                    width: 100%;
+                    margin-bottom: 1em;
+                }}
+                th, td {{
+                    border: 1px solid #888;
+                    padding: 8px;
+                    text-align: left;
+                }}
+                th {{
+                    background-color: #f2f2f2;
                 }}
             </style>
         </head>
@@ -206,13 +220,37 @@ async def format_diagnosis_md(config, final_diagnosis=None):
     markdown_prompt = format_simple_prompt("format_markdown", {"diagnosis": diagnosis_content})
     output_refinement_logger.debug("Generating markdown content")
     markdown_content = await generate_async_completion(model, markdown_prompt)
+    if "```markdown" in markdown_content:
+        markdown_content = markdown_content.split("```markdown")[1]
+    if markdown_content.endswith("```"):
+        markdown_content = markdown_content[:-3]
     reformatted_diagnosis = {"diagnosis": markdown_content, "sources": data["sources"]}
-    output_file = os.path.join(root_path, FINAL_DIAGNOSIS_DIR, f"md_formatted_{FINAL_DIAGNOSIS_NAME}.json")
+    output_file = os.path.join(root_path, FINAL_DIAGNOSIS_DIR, f"{FINAL_DIAGNOSIS_NAME}.json")
     with open(output_file, "w") as f:
         json.dump(reformatted_diagnosis, f, indent=4)
 
     output_refinement_logger.info(f"Markdown-formatted diagnosis saved: {output_file}")
     return reformatted_diagnosis
+
+def fix_impact_blocks(md):
+    lines = md.split('\n')
+    fixed_lines = []
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        fixed_lines.append(line)
+        # Look for a line ending with '_Impact:_'
+        if re.match(r'^\s*-.*_Impact:_\s*$', line):
+            # Look ahead for indented lines that are not already bullets
+            j = i + 1
+            while j < len(lines) and (lines[j].startswith('  ') or lines[j].startswith('\t')):
+                if not re.match(r'^\s*-\s', lines[j]):
+                    # Convert to sub-bullet
+                    lines[j] = re.sub(r'^(\s+)', r'\1- ', lines[j])
+                j += 1
+            i = j - 1
+        i += 1
+    return '\n'.join(fixed_lines)
 
 if __name__ == "__main__":
     output_refinement_logger.info("Running output_refinement as main")

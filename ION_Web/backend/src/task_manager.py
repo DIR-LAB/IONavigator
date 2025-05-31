@@ -11,21 +11,27 @@ import shutil
 import sys
 import json
 from tree_utils import parse_dir_tree
-from ION.Completions import get_completion_queue
-from ION.Utils import get_config
-from ION.Steps import (
+from ion.Completions import get_router
+from ion.Utils import get_config, get_models
+from ion.Steps import (
     extract_summary_info, 
     generate_rag_diagnosis, 
     intra_module_merge, 
-    inter_module_merge, 
-    format_diagnosis_html
+    inter_module_merge,
+    format_diagnosis_md
 )
+from ion import set_rag_dirs
 import asyncio
 from datetime import datetime
 import traceback
-IONPRO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-IONPRO_CONFIG_PATH = os.path.join(IONPRO_ROOT, "configs/default_config.json")
-CONFIG = get_config(IONPRO_CONFIG_PATH)
+ION_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+ION_CONFIG_PATH = os.path.join(ION_ROOT, "configs/default_config.json")
+ION_MODELS_PATH = os.path.join(ION_ROOT, "configs/models.json")
+CONFIG = get_config(ION_CONFIG_PATH)
+MODELS = get_models(ION_MODELS_PATH)
+
+get_router(MODELS)
+
 
 ANALYSIS_DIR = "./tmp_analysis"
 if not os.path.exists(ANALYSIS_DIR):
@@ -189,10 +195,9 @@ class TaskManager:
             config["analysis_root"] = os.path.join(analysis_dir, "Output")
             for step in config["steps"]:
                 config["steps"][step]["model"] = task.llm['model']
-            config["RAG"]["rag_index_dir"] = os.path.join(IONPRO_ROOT, config["RAG"]["rag_index_dir"])
-            config["RAG"]["rag_source_data_dir"] = os.path.join(IONPRO_ROOT, config["RAG"]["rag_source_data_dir"])
 
-            get_completion_queue(task.llm["rate_limit"], task.llm["tpm_limit"])
+
+            config = set_rag_dirs(config)
 
             # Extract summary info
             print("Extracting summary info")
@@ -213,6 +218,11 @@ class TaskManager:
             print("Inter-module merge")
             task.progress = 50
             final_diagnosis = loop.run_until_complete(inter_module_merge(config))
+
+            # Format diagnosis
+            print("Formatting diagnosis")
+            task.progress = 70
+            final_diagnosis = loop.run_until_complete(format_diagnosis_md(config, final_diagnosis))
 
             # Upload results to S3
             new_dir = os.path.join(task.user_id, task.trace_name, "Output")

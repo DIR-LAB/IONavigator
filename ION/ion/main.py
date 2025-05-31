@@ -3,6 +3,7 @@ from .Steps import (
     generate_rag_diagnosis, 
     intra_module_merge, 
     inter_module_merge, 
+    format_diagnosis_md,
     format_diagnosis_html
 )
 from .Utils import count_runtime
@@ -17,7 +18,7 @@ def set_rag_dirs(config):
     return config
 
 @count_runtime
-async def run_ION(config):
+async def run_ION(config, format_md = False):
     print("Starting IONPro")
     print("Extracting summary info")
     await extract_summary_info(config)
@@ -28,6 +29,8 @@ async def run_ION(config):
     print("Inter-module merge")
     final_diagnosis = await inter_module_merge(config)
     print("Formatting diagnosis")
+    if format_md:
+        final_diagnosis = await format_diagnosis_md(config, final_diagnosis)
     format_diagnosis_html(config, final_diagnosis)
     print("IONPro complete")
     return final_diagnosis

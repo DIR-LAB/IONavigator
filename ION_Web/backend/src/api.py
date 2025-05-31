@@ -1,13 +1,10 @@
 from flask import Flask, request, jsonify
 from service_config import mongodb_client, s3_client
-from LLM import get_completion_queue, generate_completion, SYSTEM_PROMPT, SYSTEM_PROMPT_REVISED, get_metrics, SUPPORTED_MODELS
-from chat_agent import TOOLS, TOOL_FUNCTIONS
-from litellm import ChatCompletionMessageToolCall
+from LLM import SYSTEM_PROMPT_REVISED, SUPPORTED_MODELS
 import uuid
 import os
 from flask_cors import CORS, cross_origin
 import json
-import re
 import traceback
 from utils.logging import setup_logger
 from werkzeug.utils import secure_filename
@@ -18,11 +15,10 @@ from obj_types import (
     User, ChatMessage, ChatHistory, TraceMetadata, 
     TraceDiagnosis, APIResponse, UploadTraceResponse, UserResponse
 )
-from io import StringIO, BytesIO
 import sys
 sys.path.append('../../..')
 from task_manager import task_manager
-from ION.Steps import json_to_html, md_to_html
+from ion.Steps import json_to_html, md_to_html
 from ion_extractor.parsers.utils import load_darshan_log
 
 ANALYSIS_DIR = "./tmp_analysis"
@@ -400,7 +396,7 @@ def upload_trace():
             trace_description='User uploaded trace',
             upload_date=datetime.now(),
             status='not_started',
-            model='gpt-4o'  # Set default model
+            model='gpt-4.1-mini'  # Set default model
         )
         
         # Upload trace file to S3
@@ -659,4 +655,4 @@ def update_trace_model():
         return jsonify({'error': 'Failed to update trace model'}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5001)

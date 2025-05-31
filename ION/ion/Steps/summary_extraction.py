@@ -47,7 +47,7 @@ async def generate_rag_documents(model, module_summaries, broad_context, summary
         method_name = re.search(r'def (\w+)', method).group(1)
         rag_document = (f"The {method_name} method in the {module_name} module resulted in the following calculated values: \n\n"
                         f"<json>{method_return_values}</json>\n\n"
-                        f"The broader context if the application is as follows: \n\n<json>{broad_context}</json>\n\n"
+                        f"The broader context of the application is as follows: \n\n<json>{broad_context}</json>\n\n"
                         f"The resultant interpretation of the output values given the broader context of the application is as follows: \n\n{rag_document}")
         summary_extraction_logger.info(f"Writing RAG document for {module_name}_{idx}")
         async with aiofiles.open(os.path.join(summary_dir, f"{module_name}_{idx}.txt"), "w", encoding='utf-8') as f:
