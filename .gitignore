@@ -180,3 +180,6 @@ ION/ion/Index/**/*.json
 test_traces/
 
 ION/ION_Output/
+
+# TraceBench
+TraceBench/evaluator/TraceBench
