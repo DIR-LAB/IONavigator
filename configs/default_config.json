@@ -1,5 +1,5 @@
 {
-  "trace_path": "/Users/chandudarapaneni/Documents/IONavigator/sample_logs/",
+  "trace_path": "",
   "limit": 3,
   "rate_limit": 120,
   "tpm_limit": 3000000,
