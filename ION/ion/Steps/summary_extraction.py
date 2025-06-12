@@ -109,7 +109,7 @@ async def extract_summary_info(config):
 
 if __name__ == "__main__":
     summary_extraction_logger.info("Running summary_extraction as main")
-    default_config = json.load(open("/Users/chris/Documents/Github/IONPro/IONPro/Configs/default_config.json", "r"))
+    default_config = json.load(open("../../configs/default_config.json", "r"))
     asyncio.run(extract_summary_info(default_config))
     summary_extraction_logger.info("Summary extraction script completed")
 
