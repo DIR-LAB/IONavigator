@@ -107,10 +107,6 @@ class STDIO:
     def __init__(self, stdio_df):
         self.stdio_df = stdio_df
         self.darshan_module = "STDIO"
-        self.summary_description = (
-            f"GOAL: Analyze the {self.darshan_module} module data and extract the summarize the following key aspects:\n"
-            f"\t1.  
-        )
 
     def get_size_summary(self):
         self.size_summary = {
