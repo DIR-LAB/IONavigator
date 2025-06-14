@@ -11,27 +11,6 @@ import re
 ################################################################
 
 def get_darshan_modules(trace_path):
-    header = None
-    modules = {}
-
-    # Try to find actual CSV files in the trace_path
-    for filename in os.listdir(trace_path):
-        if filename.endswith('.csv'):
-            module_name = filename.split('.')[0]
-            modules[module_name] = pd.read_csv(os.path.join(trace_path, filename))
-
-    # Dummy fallback if nothing was found
-    if not modules:
-        modules = {'dummy_module': pd.DataFrame()}
-    if header is None:
-        header = {
-        'runtime': 1000,
-        'nprocs' : 64 # or any fake number of processes
-       }
-
-    return modules, header
-
-
     # look for all csv files in the directory
     modules = {}
     for filename in os.listdir(trace_path):
@@ -127,6 +106,10 @@ class STDIO:
     def __init__(self, stdio_df):
         self.stdio_df = stdio_df
         self.darshan_module = "STDIO"
+        self.summary_description = (
+            f"GOAL: Analyze the {self.darshan_module} module data and extract the summarize the following key aspects:\n"
+            f"\t1.  
+        )
 
     def get_size_summary(self):
         self.size_summary = {
