@@ -1,3 +1,4 @@
+import os
 import json
 import asyncio
 import aiofiles
@@ -37,8 +38,8 @@ async def merge_intra_module_diagnoses(model, default_model, module_name, diagno
             f"{inject_string}intra_module_merge", diagnosis1, diagnosis2, {"module": module_name})
 
     intra_merge_logger.debug(f"Generated merge prompt with ID: {unique_id}")
-    merged_diagnosis = await generate_async_completion(model, merge_prompt, response_format=MergedDiagnosis)
-    merged_diagnosis_json = MergedDiagnosis.model_validate_json(
+    merged_diagnosis = await generate_async_completion(model, merge_prompt, response_format=RAGDiagnosis)
+    merged_diagnosis_json = RAGDiagnosis.model_validate_json(
         merged_diagnosis)
     merged_diagnosis = merged_diagnosis_json.diagnosis
     sources_ids = merged_diagnosis_json.sources
@@ -191,8 +192,8 @@ async def merge_inter_module_diagnoses(model, default_model, module_names, modul
                 f"{inject_string}inter_module_merge", module1_data, module2_data, {"all_modules": module_names})
 
     inter_merge_logger.debug(f"Generated merge prompt with ID: {unique_id}")
-    merged_diagnosis = await generate_async_completion(model, merge_prompt, response_format=MergedDiagnosis)
-    merged_diagnosis_json = MergedDiagnosis.model_validate_json(
+    merged_diagnosis = await generate_async_completion(model, merge_prompt, response_format=RAGDiagnosis)
+    merged_diagnosis_json = RAGDiagnosis.model_validate_json(
         merged_diagnosis)
     merged_diagnosis = merged_diagnosis_json.diagnosis
     sources_ids = merged_diagnosis_json.sources
