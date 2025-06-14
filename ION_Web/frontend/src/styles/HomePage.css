@@ -31,3 +31,25 @@
 .upload-button:hover:not(:disabled) {
   background-color: #45a049;
 }
+
+/* Homepage container with new layout */
+.homepage-container {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 20px 0;
+  min-height: calc(100vh - 200px); /* Account for banner and footer */
+}
+
+.footer-section {
+  margin-top: auto;
+  padding: 20px;
+}

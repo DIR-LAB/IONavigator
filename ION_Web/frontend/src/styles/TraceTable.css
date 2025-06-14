@@ -1,35 +1,46 @@
 .trace-table-container {
-  margin: 20px auto;
-  width: 80%;
-  max-width: 1000px;
+  width: 100%;
+  margin: 0;
+  padding: 0 20px;
   overflow-x: auto;
+  box-sizing: border-box;
 }
 
 .trace-table {
   width: 100%;
   border-collapse: collapse;
   background-color: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-  border: 1px solid #ddd;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: none;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .trace-table th,
 .trace-table td {
-  padding: 12px;
-  text-align: center;
-  border: 1px solid #ddd;
+  padding: 16px 12px;
+  text-align: left;
+  border-bottom: 1px solid #f0f0f0;
   vertical-align: middle;
 }
 
 .trace-table th {
-  background-color: #f5f5f5;
-  font-weight: bold;
-  border-bottom: 2px solid #ddd;
-  text-align: center;
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #495057;
+  border-bottom: 2px solid #e9ecef;
+  text-align: left;
+  font-size: 14px;
+  letter-spacing: 0.5px;
 }
 
-.trace-table tr:hover {
-  background-color: #f9f9f9;
+.trace-table tbody tr:hover {
+  background-color: #f8f9fa;
+  transition: background-color 0.2s ease;
+}
+
+.trace-table tbody tr:last-child td {
+  border-bottom: none;
 }
 
 .trace-table button {
@@ -51,16 +62,47 @@
 
 @media (max-width: 1024px) {
   .trace-table-container {
-    width: 95%;
+    padding: 0 10px;
+  }
+  
+  .trace-table th,
+  .trace-table td {
+    padding: 12px 8px;
+    font-size: 14px;
+  }
+  
+  .action-cell {
+    gap: 4px;
+    padding: 12px 8px;
+  }
+  
+  .interact-button,
+  .analysis-button,
+  .inspect-button,
+  .delete-button {
+    width: 28px !important;
+    height: 28px;
+  }
+  
+  .analysis-icon,
+  .inspect-icon,
+  .delete-icon {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .interact-icon {
+    width: 18px;
+    height: 18px;
   }
 }
 
 .action-cell {
   display: flex;
-  gap: 2px;
-  justify-content: center;
+  gap: 8px;
+  justify-content: flex-start;
   align-items: center;
-  padding: 4px;
+  padding: 16px 12px;
 }
 
 .delete-button {
@@ -86,13 +128,17 @@
 }
 
 .status-cell {
-  text-align: center;
+  text-align: left;
 }
 
 .status-badge {
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 0.9em;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-block;
+  min-width: 80px;
+  text-align: center;
 }
 
 .status-badge.running {
@@ -138,45 +184,88 @@ button:disabled {
 .analysis-button,
 .inspect-button,
 .delete-button {
-  width: 40px !important;
-  height: 40px;
-  padding: 6px !important;
+  width: 32px !important;
+  height: 32px;
+  padding: 4px !important;
   background-color: transparent !important;
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
 }
 
 /* Common styles for all icons */
 .analysis-icon,
 .inspect-icon,
 .delete-icon {
-  width: 24px;
-  height: 24px;
+  width: 18px;
+  height: 18px;
   transition: opacity 0.2s;
 }
 
 .interact-icon {
-  width: 40px;
-  height: 40px;
+  width: 20px;
+  height: 20px;
   transition: opacity 0.2s;
 }
 
-/* Common hover effect */
+/* Button hover effects */
+.interact-button:hover {
+  background-color: #e3f2fd;
+}
+
+.analysis-button:hover {
+  background-color: #f3e5f5;
+}
+
+.inspect-button:hover {
+  background-color: #e8f5e8;
+}
+
+.delete-button:hover {
+  background-color: #ffebee;
+}
+
+/* Common icon hover effect */
 .interact-button:hover .interact-icon,
 .analysis-button:hover .analysis-icon,
 .inspect-button:hover .inspect-icon,
 .delete-button:hover .delete-icon {
-  opacity: 0.7;
+  opacity: 0.8;
 }
 
-/* Add width constraints for specific columns */
-.trace-table th:last-child,
-.trace-table td:last-child {
-  width: 200px;
-  max-width: 200px;
+/* Column width constraints */
+.trace-table th:nth-child(1),
+.trace-table td:nth-child(1) {
+  width: 35%;
+  min-width: 200px;
+}
+
+.trace-table th:nth-child(2),
+.trace-table td:nth-child(2) {
+  width: 15%;
+  min-width: 120px;
+}
+
+.trace-table th:nth-child(3),
+.trace-table td:nth-child(3) {
+  width: 20%;
+  min-width: 150px;
+}
+
+.trace-table th:nth-child(4),
+.trace-table td:nth-child(4) {
+  width: 15%;
+  min-width: 100px;
+}
+
+.trace-table th:nth-child(5),
+.trace-table td:nth-child(5) {
+  width: 15%;
+  min-width: 150px;
 }
 
 .inspect-button:disabled {
