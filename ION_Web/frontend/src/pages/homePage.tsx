@@ -340,7 +340,7 @@ const HomePage: React.FC = () => {
             style={{ display: 'none' }}
             accept=".txt,.darshan"
           />
-          <div className="details-container">
+          <div className="details-main-content">
             <div className="back-button-container">
               <button 
                 onClick={handleBackButtonClick} 
@@ -350,13 +350,15 @@ const HomePage: React.FC = () => {
                 <img src={backIcon} alt="Back" />
               </button>
             </div>
-            <div className="side-by-side">
+            <div className="trace-details-content">
               <OriginalTraceWindow traceName={selectedTrace.trace_name} user_id={userId} />
               <ChatWindow selectedTrace={selectedTrace} />
             </div>
+          </div>
+          <div className="details-footer">
             <section className="disclaimer">
-                <p><strong>Disclaimer:</strong> As this demo is for research purposes, user interactions in the form of chat messages and like/dislike/comment feedback will be recorded. These will not be shared anywhere.</p>
-              </section>
+              <p><strong>Disclaimer:</strong> As this demo is for research purposes, user interactions in the form of chat messages and like/dislike/comment feedback will be recorded. These will not be shared anywhere.</p>
+            </section>
           </div>
         </div>
       )}
