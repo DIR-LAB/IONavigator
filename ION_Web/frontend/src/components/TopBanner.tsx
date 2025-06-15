@@ -16,7 +16,7 @@ const TopBanner: React.FC<TopBannerProps> = ({ currentUser, isTestUser, onUpload
     <div className="top-banner">
       <div className="banner-left">
         <img src={IONLOGO} alt="ION Logo" className="banner-logo" />
-        <h1 className="banner-title">IO Insight</h1>
+        <h1 className="banner-title">HPC I/O Navigator</h1>
       </div>
       
       <div className="banner-right">
