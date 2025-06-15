@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Trace } from '../interface/interfaces';
 import '../styles/TraceTable.css';
 import deleteIcon from '../assets/delete-icon.png';
@@ -7,6 +7,9 @@ import inspectIcon from '../assets/inspect-process.svg';
 import interactIcon from '../assets/interact.svg';
 import editIcon from '../assets/edit-icon.svg';
 import rerunIcon from '../assets/rerun-analysis.svg';
+
+type SortField = 'trace_name' | 'upload_date' | 'status';
+type SortDirection = 'asc' | 'desc';
 
 interface TraceTableProps {
   traces: Array<Trace>;
@@ -40,6 +43,8 @@ const TraceTable: React.FC<TraceTableProps> = ({
   const [editingTraceId, setEditingTraceId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState<string>('');
   const [isRenaming, setIsRenaming] = useState<boolean>(false);
+  const [sortField, setSortField] = useState<SortField>('upload_date');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   const getStatus = (trace: Trace) => {
     const analysisStatus = analysisStatuses[trace.trace_name];
@@ -127,23 +132,85 @@ const TraceTable: React.FC<TraceTableProps> = ({
     }
   };
 
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) {
+      return '↕️';
+    }
+    return sortDirection === 'asc' ? '↑' : '↓';
+  };
+
+  const sortedTraces = useMemo(() => {
+    const sorted = [...traces].sort((a, b) => {
+      let aValue: string | number;
+      let bValue: string | number;
+
+      switch (sortField) {
+        case 'trace_name':
+          aValue = a.trace_name.toLowerCase();
+          bValue = b.trace_name.toLowerCase();
+          break;
+        case 'upload_date':
+          aValue = new Date(a.upload_date).getTime();
+          bValue = new Date(b.upload_date).getTime();
+          break;
+        case 'status':
+          // Get the actual display status for sorting
+          const aStatus = analysisStatuses[a.trace_name]?.status || a.status || 'not_started';
+          const bStatus = analysisStatuses[b.trace_name]?.status || b.status || 'not_started';
+          aValue = aStatus.toLowerCase();
+          bValue = bStatus.toLowerCase();
+          break;
+        default:
+          return 0;
+      }
+
+      if (aValue < bValue) {
+        return sortDirection === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortDirection === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+    return sorted;
+  }, [traces, sortField, sortDirection, analysisStatuses]);
+
   return (
     <div className="trace-table-container">
       <table className="trace-table">
         <thead>
           <tr>
-            <th>
-              <div>Trace Name</div>
-              <div className="edit-hint">(double-click to edit)</div>
+            <th className="sortable" onClick={() => handleSort('trace_name')}>
+              <div className="header-content">
+                <div>Trace Name <span className="sort-icon">{getSortIcon('trace_name')}</span></div>
+                <div className="edit-hint">(double-click to edit)</div>
+              </div>
             </th>
-            <th>Upload Date</th>
+            <th className="sortable" onClick={() => handleSort('upload_date')}>
+              <div className="header-content">
+                Upload Date <span className="sort-icon">{getSortIcon('upload_date')}</span>
+              </div>
+            </th>
             <th>Model</th>
-            <th>Status</th>
+            <th className="sortable" onClick={() => handleSort('status')}>
+              <div className="header-content">
+                Status <span className="sort-icon">{getSortIcon('status')}</span>
+              </div>
+            </th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {traces.map((trace, index) => (
+          {sortedTraces.map((trace, index) => (
             <tr key={index} className={isRenaming && editingTraceId === trace.trace_name ? 'renaming' : ''}>
               <td 
                 onDoubleClick={() => handleDoubleClick(trace)}
