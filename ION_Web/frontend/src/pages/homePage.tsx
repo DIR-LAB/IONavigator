@@ -3,6 +3,7 @@ import { fetchUserTraces, deleteTrace, startAnalysis, checkAnalysisStatus, fetch
 import ChatWindow from '../components/ChatWindow';
 import OriginalTraceWindow from '../components/originalTraceWindow';
 import DiagnosisTree from '../components/DiagnosisTree';
+import AuthModal from '../components/AuthModal';
 import { Trace } from '../interface/interfaces';
 import backIcon from '../assets/back-button.svg';
 import { useUser } from '../contexts/UserContext';
@@ -12,7 +13,17 @@ import TraceTable from '../components/TraceTable';
 import '../styles/HomePage.css';
 
 const HomePage: React.FC = () => {
-  const { userId } = useUser() || { userId: null };
+  const { 
+    userId, 
+    userEmail, 
+    isTestUser, 
+    isAuthenticated, 
+    login, 
+    register, 
+    logout, 
+    refreshUserData 
+  } = useUser() || {};
+  
   const [view, setView] = useState<'list' | 'details' | 'inspect'>('list');
   const [userTraces, setUserTraces] = useState<Array<Trace>>([]);
   const [selectedTrace, setSelectedTrace] = useState<Trace | null>(null);
@@ -23,6 +34,7 @@ const HomePage: React.FC = () => {
     progress: number;
   }}>({});
   const [treeData, setTreeData] = useState<any>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   // Add file input reference
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -37,21 +49,47 @@ const HomePage: React.FC = () => {
     { value: 'anthropic/claude-3-7-sonnet-20250219', label: 'Claude-3.7-Sonnet' },
   ];
 
-  useEffect(() => {
-    const loadUserTraces = async (userId: string) => {
-      try {
-        const data = await fetchUserTraces(userId);
-        setUserTraces(data);
-        console.log(data);
-      } catch (error) {
-        console.error('Failed to load example cases:', error);
-      }
-    };
+  const loadUserTraces = async (currentUserId: string) => {
+    try {
+      const data = await fetchUserTraces(currentUserId);
+      setUserTraces(data);
+      console.log(`Loaded ${data.length} traces for user:`, currentUserId);
+    } catch (error) {
+      console.error('Failed to load user traces:', error);
+      setUserTraces([]);
+    }
+  };
 
+  useEffect(() => {
     if (userId) {
       loadUserTraces(userId);
     }
-  }, [userId]);
+  }, [userId]); // Refresh traces when userId changes
+
+  const handleUserClick = () => {
+    if (isTestUser) {
+      setShowAuthModal(true);
+    } else {
+      // Show logout option for authenticated users
+      if (logout && window.confirm('Do you want to logout?')) {
+        logout();
+      }
+    }
+  };
+
+  const handleLogin = async (email: string, password: string) => {
+    if (login) {
+      await login(email, password);
+      // Traces will automatically refresh due to userId change
+    }
+  };
+
+  const handleRegister = async (email: string, password: string) => {
+    if (register) {
+      await register(email, password);
+      // Traces will automatically refresh due to userId change
+    }
+  };
 
   const handleTraceClick = (trace: Trace) => {
     setSelectedTrace(trace);
@@ -296,8 +334,10 @@ const HomePage: React.FC = () => {
       {view === 'list' && (
         <>
           <TopBanner 
-            currentUser={userId}
+            currentUser={userEmail}
+            isTestUser={isTestUser || false}
             onUploadClick={handleUploadClick}
+            onUserClick={handleUserClick}
             uploading={uploading}
           />
           <input
@@ -329,8 +369,10 @@ const HomePage: React.FC = () => {
       {view === 'details' && selectedTrace && userId && (
         <div className="homepage-container">
           <TopBanner 
-            currentUser={userId}
+            currentUser={userEmail}
+            isTestUser={isTestUser || false}
             onUploadClick={handleUploadClick}
+            onUserClick={handleUserClick}
             uploading={uploading}
           />
           <input
@@ -365,8 +407,10 @@ const HomePage: React.FC = () => {
       {view === 'inspect' && selectedTrace && treeData && (
         <div className="homepage-container">
           <TopBanner 
-            currentUser={userId}
+            currentUser={userEmail}
+            isTestUser={isTestUser || false}
             onUploadClick={handleUploadClick}
+            onUserClick={handleUserClick}
             uploading={uploading}
           />
           <input
@@ -393,6 +437,13 @@ const HomePage: React.FC = () => {
           </div>
         </div>
       )}
+      
+      <AuthModal 
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onLogin={handleLogin}
+        onRegister={handleRegister}
+      />
     </div>
   );
 };

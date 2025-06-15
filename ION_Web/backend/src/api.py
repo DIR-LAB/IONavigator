@@ -62,6 +62,46 @@ def add_user():
         message=message
     ).model_dump(), status_code
 
+@app.route('/api/register', methods=['POST'])
+def register_user():
+    email = request.json.get('email')
+    password = request.json.get('password')
+    
+    if not email or not password:
+        return APIResponse(
+            error='Email and password are required',
+            status_code=400
+        ).model_dump(), 400
+    
+    if len(password) < 6:
+        return APIResponse(
+            error='Password must be at least 6 characters long',
+            status_code=400
+        ).model_dump(), 400
+    
+    user_id, message, status_code = mongodb_client.register_user(email, password)
+    return UserResponse(
+        user_id=user_id,
+        message=message
+    ).model_dump(), status_code
+
+@app.route('/api/login', methods=['POST'])
+def login_user():
+    email = request.json.get('email')
+    password = request.json.get('password')
+    
+    if not email or not password:
+        return APIResponse(
+            error='Email and password are required',
+            status_code=400
+        ).model_dump(), 400
+    
+    user_id, message, status_code = mongodb_client.login_user(email, password)
+    return UserResponse(
+        user_id=user_id,
+        message=message
+    ).model_dump(), status_code
+
 
 
 @app.route('/api/user_traces', methods=['POST'])

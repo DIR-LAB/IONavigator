@@ -5,11 +5,13 @@ import '../styles/TopBanner.css';
 
 interface TopBannerProps {
   currentUser: string | null;
+  isTestUser: boolean;
   onUploadClick: () => void;
+  onUserClick: () => void;
   uploading: boolean;
 }
 
-const TopBanner: React.FC<TopBannerProps> = ({ currentUser, onUploadClick, uploading }) => {
+const TopBanner: React.FC<TopBannerProps> = ({ currentUser, isTestUser, onUploadClick, onUserClick, uploading }) => {
   return (
     <div className="top-banner">
       <div className="banner-left">
@@ -18,8 +20,13 @@ const TopBanner: React.FC<TopBannerProps> = ({ currentUser, onUploadClick, uploa
       </div>
       
       <div className="banner-right">
-        <div className="current-user">
-          <span>User: {currentUser || 'Loading...'}</span>
+        <div className="current-user" onClick={onUserClick}>
+          <span className="user-label">User:</span>
+          <span className={`user-email ${isTestUser ? 'test-user' : 'logged-user'}`}>
+            {currentUser || 'Loading...'}
+          </span>
+          {isTestUser && <span className="test-badge">Test Account</span>}
+          <span className="login-hint">Click to login</span>
         </div>
         
         <button 

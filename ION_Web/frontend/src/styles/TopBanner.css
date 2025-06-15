@@ -36,9 +36,62 @@
 }
 
 .current-user {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  position: relative;
+}
+
+.current-user:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.user-label {
+  font-size: 12px;
+  color: #6c757d;
+  font-weight: 400;
+}
+
+.user-email {
   font-size: 14px;
-  color: #666;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.user-email.test-user {
+  color: #856404;
+}
+
+.user-email.logged-user {
+  color: #495057;
+}
+
+.test-badge {
+  background-color: #fff3cd;
+  color: #856404;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  border: 1px solid #ffeaa7;
+}
+
+.login-hint {
+  font-size: 11px;
+  color: #007bff;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.current-user:hover .login-hint {
+  opacity: 1;
 }
 
 .banner-upload-button {
