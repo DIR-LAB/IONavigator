@@ -29,9 +29,17 @@ if not os.path.exists(ANALYSIS_DIR):
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 1000 * 1024 * 1024
 
+ec2_origin = os.getenv("EC2_ORIGIN")
+cors_allowed_origins = [
+    "http://127.0.0.1:3000",
+    "http://localhost:3000"
+]
+if ec2_origin:
+    cors_allowed_origins.append(ec2_origin)
+
 CORS(app, resources={
     r"/api/*": {
-        "origins": ["http://127.0.0.1:3000", "http://localhost:3000", "http://3.138.157.186", "http://ec2-3-138-157-186.us-east-2.compute.amazonaws.com"],
+        "origins": cors_allowed_origins,
         "methods": ["GET", "POST", "OPTIONS"],
         "allow_headers": ["Content-Type"]
     },
