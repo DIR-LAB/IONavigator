@@ -250,27 +250,19 @@ async def run_async_inter_module_merge(module_diagnoses, config):
         removed_modules = []
         for i in range(0, len(remaining_modules)-1, 2):
             module_1_name = remaining_modules[i]
+            module_1_diagnosis = module_diagnoses[module_1_name]
+            removed_modules.append(module_1_name)
             module_2_name = remaining_modules[i+1]
-
-            diagnosis_1 = module_diagnoses[module_1_name]
-            diagnosis_2 = module_diagnoses[module_2_name]
-
-            merged = merge_diagnoses(diagnosis_1, diagnosis_2, config)
-            return "No module diagnoses available for merging."
-        module_1_name = remaining_modules[i]
-        module_1_diagnosis = module_diagnoses[module_1_name]
-        removed_modules.append(module_1_name)
-        module_2_name = remaining_modules[i+1]
-        module_2_diagnosis = module_diagnoses[module_2_name]
-        removed_modules.append(module_2_name)
-        combined_module_name = module_1_name+'_'+module_2_name
-        new_remaining_modules.append(combined_module_name)
-        if rag_enabled:
-            tasks.append(merge_inter_module_diagnoses(model, default_model, [
-                         module_1_name, module_2_name], module_1_diagnosis, module_2_diagnosis, combined_module_name, current_merge_dir))
-        else:
-            tasks.append(merge_inter_module_diagnoses(model, default_model, [
-                         module_1_name, module_2_name], module_1_diagnosis, module_2_diagnosis, combined_module_name, current_merge_dir, rag_enabled=False))
+            module_2_diagnosis = module_diagnoses[module_2_name]
+            removed_modules.append(module_2_name)
+            combined_module_name = module_1_name+'_'+module_2_name
+            new_remaining_modules.append(combined_module_name)
+            if rag_enabled:
+                tasks.append(merge_inter_module_diagnoses(model, default_model, [
+                            module_1_name, module_2_name], module_1_diagnosis, module_2_diagnosis, combined_module_name, current_merge_dir))
+            else:
+                tasks.append(merge_inter_module_diagnoses(model, default_model, [
+                            module_1_name, module_2_name], module_1_diagnosis, module_2_diagnosis, combined_module_name, current_merge_dir, rag_enabled=False))
         for module in removed_modules:
             module_diagnoses.pop(module)
             remaining_modules.remove(module)
