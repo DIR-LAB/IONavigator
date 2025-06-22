@@ -2,92 +2,98 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 30px;
-  background-color: #f8f9fa;
-  border-bottom: 2px solid #e9ecef;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: var(--spacing-lg) var(--spacing-2xl);
+  background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-dark) 100%);
+  border-bottom: 3px solid var(--secondary-gold);
+  box-shadow: var(--shadow-lg);
   width: 100%;
   box-sizing: border-box;
+  min-height: var(--header-height);
 }
 
 .banner-left {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: var(--spacing-lg);
 }
 
 .banner-logo {
-  height: 50px;
+  height: 56px;
   width: auto;
+  /* Removed filter to show the actual logo colors */
 }
 
 .banner-title {
-  font-size: 28px;
-  font-weight: bold;
-  color: #333;
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--white);
   margin: 0;
-  font-family: 'Raleway', sans-serif;
+  font-family: var(--font-family-primary);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .banner-right {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: var(--spacing-xl);
 }
 
 .current-user {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 2px;
-  padding: 8px 12px;
-  border-radius: 8px;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-md);
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all var(--transition-fast);
   position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .current-user:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
 }
 
 .user-label {
-  font-size: 12px;
-  color: #6c757d;
-  font-weight: 400;
+  font-size: var(--font-size-xs);
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: var(--font-weight-normal);
 }
 
 .user-email {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--spacing-xs);
 }
 
 .user-email.test-user {
-  color: #856404;
+  color: var(--secondary-gold);
 }
 
 .user-email.logged-user {
-  color: #495057;
+  color: var(--white);
 }
 
 .test-badge {
-  background-color: #fff3cd;
-  color: #856404;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 10px;
-  font-weight: 500;
-  border: 1px solid #ffeaa7;
+  background-color: var(--secondary-gold-light);
+  color: var(--primary-blue-dark);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  border: 1px solid var(--secondary-gold);
 }
 
 .login-hint {
-  font-size: 11px;
-  color: #007bff;
+  font-size: var(--font-size-xs);
+  color: var(--secondary-gold);
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: opacity var(--transition-fast);
 }
 
 .current-user:hover .login-hint {
@@ -95,78 +101,107 @@
 }
 
 .banner-upload-button {
-  padding: 10px 20px;
-  background-color: #9ac89b;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background-color: var(--secondary-gold);
+  color: var(--primary-blue-dark);
+  border: 2px solid var(--secondary-gold);
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: all var(--transition-fast);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
+  box-shadow: var(--shadow-md);
 }
 
 .banner-upload-button:disabled {
-  background-color: #cccccc;
+  background-color: var(--gray-400);
+  color: var(--gray-600);
+  border-color: var(--gray-400);
   cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .banner-upload-button:hover:not(:disabled) {
-  background-color: #45a049;
+  background-color: var(--secondary-gold-hover);
+  border-color: var(--secondary-gold-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.banner-upload-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: var(--shadow-md);
 }
 
 .banner-upload-button .upload-icon {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
 }
 
 /* Mobile responsiveness */
 @media (max-width: 768px) {
   .top-banner {
     flex-direction: column;
-    gap: 15px;
-    padding: 15px 20px;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-lg) var(--spacing-xl);
+    min-height: auto;
   }
   
   .banner-left {
-    gap: 10px;
+    gap: var(--spacing-md);
+    justify-content: center;
+  }
+  
+  .banner-logo {
+    height: 48px;
+  }
+  
+  .banner-title {
+    font-size: var(--font-size-2xl);
+    text-align: center;
+  }
+  
+  .banner-right {
+    flex-direction: column;
+    gap: var(--spacing-md);
+    width: 100%;
+    align-items: center;
+  }
+  
+  .current-user {
+    align-items: center;
+    text-align: center;
+  }
+  
+  .banner-upload-button {
+    width: 100%;
+    justify-content: center;
+    max-width: 280px;
+  }
+}
+
+@media (max-width: 480px) {
+  .top-banner {
+    padding: var(--spacing-md) var(--spacing-lg);
+  }
+  
+  .banner-title {
+    font-size: var(--font-size-xl);
   }
   
   .banner-logo {
     height: 40px;
   }
   
-  .banner-title {
-    font-size: 24px;
-  }
-  
-  .banner-right {
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
-  }
-  
-  .banner-upload-button {
-    width: 100%;
-    justify-content: center;
-  }
-}
-
-@media (max-width: 480px) {
-  .banner-title {
-    font-size: 20px;
-  }
-  
   .current-user {
-    font-size: 12px;
-    text-align: center;
+    font-size: var(--font-size-xs);
   }
   
   .banner-upload-button {
-    font-size: 12px;
-    padding: 8px 16px;
+    font-size: var(--font-size-xs);
+    padding: var(--spacing-xs) var(--spacing-md);
   }
 }
