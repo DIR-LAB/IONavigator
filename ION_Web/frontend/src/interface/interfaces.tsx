@@ -24,10 +24,6 @@ export interface OriginalTraceWindowProps {
   }
 
 
-export interface EmailInputProps {
-    onEmailSubmit: (userId: string) => void;
-  }
-
 
 export interface Message {
     role: string;

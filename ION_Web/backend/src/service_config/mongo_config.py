@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 import os
+import bcrypt
 from uuid import uuid4, UUID
 from typing import Tuple, Optional, Union
 from obj_types import User, ChatHistory, APIResponse
@@ -98,3 +99,66 @@ class MongoDBClient:
         except Exception as e:
             print(f"Error updating chat history: {e}")
             return False, 'Failed to update chat history', 500
+
+    def _hash_password(self, password: str) -> str:
+        """Hash a password using bcrypt"""
+        salt = bcrypt.gensalt()
+        hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
+        return hashed.decode('utf-8')
+
+    def _verify_password(self, password: str, hashed: str) -> bool:
+        """Verify a password against its hash"""
+        return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
+
+    def register_user(self, email: str, password: str) -> Tuple[UUID, str, int]:
+        """Register a new user with email and password"""
+        print(f"Attempting to register user with email: {email}")
+        
+        # Check if user already exists
+        existing_user = self.users.find_one({'Email': email})
+        if existing_user:
+            print(f"User already exists with email: {email}")
+            return None, 'User already exists', 409
+        
+        # Hash the password
+        hashed_password = self._hash_password(password)
+        
+        # Create new user
+        user_id = uuid4()
+        print(f"Creating new user with ID: {user_id}")
+        
+        user_data = {
+            'Email': email,
+            'user_id': str(user_id),
+            'password': hashed_password,
+            'traces': {},
+            'messages': {}
+        }
+        
+        print(f"Inserting user data: {user_data}")
+        self.users.insert_one(user_data)
+        return user_id, 'User registered successfully', 201
+
+    def login_user(self, email: str, password: str) -> Tuple[Optional[UUID], str, int]:
+        """Authenticate user login"""
+        print(f"Attempting to login user with email: {email}")
+        
+        # Find user by email
+        user = self.users.find_one({'Email': email})
+        if not user:
+            print(f"No user found with email: {email}")
+            return None, 'Invalid email or password', 401
+        
+        # Check if user has a password (for backward compatibility)
+        if 'password' not in user:
+            print(f"User {email} exists but has no password set")
+            return None, 'Please register to set a password', 401
+        
+        # Verify password
+        if not self._verify_password(password, user['password']):
+            print(f"Invalid password for user: {email}")
+            return None, 'Invalid email or password', 401
+        
+        print(f"User {email} logged in successfully")
+        user_id = UUID(user['user_id'])
+        return user_id, 'Login successful', 200

@@ -1,7 +1,7 @@
 .trace-table-container {
   width: 100%;
-  margin: 0;
-  padding: 0 20px;
+  margin: var(--spacing-xl) 0;
+  padding: 0 var(--spacing-xl);
   overflow-x: auto;
   box-sizing: border-box;
 }
@@ -9,34 +9,68 @@
 .trace-table {
   width: 100%;
   border-collapse: collapse;
-  background-color: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: none;
-  border-radius: 8px;
+  background-color: var(--white);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--border-radius-lg);
   overflow: hidden;
+  font-family: var(--font-family-primary);
 }
 
 .trace-table th,
 .trace-table td {
-  padding: 16px 12px;
+  padding: var(--spacing-md) var(--spacing-md);
   text-align: left;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--gray-200);
   vertical-align: middle;
 }
 
 .trace-table th {
-  background-color: #f8f9fa;
-  font-weight: 600;
-  color: #495057;
-  border-bottom: 2px solid #e9ecef;
+  background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-dark) 100%);
+  font-weight: var(--font-weight-semibold);
+  color: var(--white);
+  border-bottom: 3px solid var(--secondary-gold);
   text-align: left;
-  font-size: 14px;
-  letter-spacing: 0.5px;
+  font-size: var(--font-size-sm);
+  letter-spacing: 0.025em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.trace-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: all var(--transition-fast);
+  position: relative;
+}
+
+.trace-table th.sortable:hover {
+  background: linear-gradient(135deg, var(--primary-blue-hover) 0%, var(--primary-blue) 100%);
+  transform: translateY(-1px);
+}
+
+.header-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sort-icon {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 12px;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.trace-table th.sortable:hover .sort-icon {
+  opacity: 1;
 }
 
 .trace-table tbody tr:hover {
-  background-color: #f8f9fa;
-  transition: background-color 0.2s ease;
+  background-color: var(--primary-blue-light);
+  transition: all var(--transition-fast);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 83, 159, 0.1);
 }
 
 .trace-table tbody tr:last-child td {
@@ -99,10 +133,10 @@
 
 .action-cell {
   display: flex;
-  gap: 8px;
+  gap: var(--spacing-sm);
   justify-content: flex-start;
   align-items: center;
-  padding: 16px 12px;
+  padding: var(--spacing-md) var(--spacing-md);
 }
 
 .delete-button {
@@ -132,38 +166,54 @@
 }
 
 .status-badge {
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 500;
-  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-width: 80px;
   text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  border: 1px solid transparent;
 }
 
 .status-badge.running {
-  background-color: #7d84cf;
-  color: #000;
+  background-color: var(--info-light);
+  color: var(--info);
+  border-color: var(--primary-blue);
 }
 
 .status-badge.completed {
-  background-color: #90EE90;
-  color: #000;
+  background-color: var(--success-light);
+  color: var(--success);
+  border-color: var(--success);
 }
 
 .status-badge.failed {
-  background-color: #ffcccb;
-  color: #000;
+  background-color: var(--error-light);
+  color: var(--error);
+  border-color: var(--error);
 }
 
 .status-badge.pending {
-  background-color: #87CEEB;
-  color: #000;
+  background-color: var(--warning-light);
+  color: #856404;
+  border-color: var(--warning);
 }
 
 .status-badge.stopped {
-  background-color: #FFB366;  /* Orange-ish color to indicate stopped state */
-  color: #000;
+  background-color: var(--secondary-gold-light);
+  color: var(--primary-blue-dark);
+  border-color: var(--secondary-gold);
+}
+
+.status-badge.not_started {
+  background-color: var(--gray-100);
+  color: var(--gray-600);
+  border-color: var(--gray-300);
 }
 
 button:disabled {
@@ -290,8 +340,9 @@ button:disabled {
 
 .edit-hint {
   font-size: 0.8em;
-  color: #666;
+  color: rgba(255, 255, 255, 0.9);
   font-weight: normal;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .trace-name-cell {
