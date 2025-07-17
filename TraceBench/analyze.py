@@ -14,7 +14,6 @@ from pathlib import Path
 
 MODULES = ["IO500", "real_app_bench", "single_issue_bench"]
 
-# Initialize Rich Console globally
 console = Console()
 
 
@@ -91,10 +90,9 @@ def main(**kwargs):
 
     console.print("Trace paths to be processed:", traces)
 
-    # # Dictionary to store results
+    # Dictionary to store results
     results = {}
 
-    # Process each trace
     for trace, name in zip(traces, trace_names):
         console.print(
             Panel(
@@ -124,7 +122,14 @@ def main(**kwargs):
                 )
             ).resolve()
             if os.path.exists(diagnosis_file):
-                results[name] = str(diagnosis_file)
+                module = Path(trace).parent.parent.name
+                
+                if module not in MODULES:
+                    console.print(f"[yellow]:warning: Directory structure for the traces is does not follow regular format; expected to have module name two parents above trace name. \n Expected one of {''.join(MODULES)}, got {module} instead. \n Defaulting to 'other' for module.")
+                    module = 'other'
+                
+                results.setdefault(module, []).append({name: str(diagnosis_file)})
+
                 console.print(
                     Panel(
                         f"The file is located at [medium_orchid][link=file://{diagnosis_file}]{diagnosis_file}[/link][/medium_orchid]",
@@ -140,7 +145,6 @@ def main(**kwargs):
         else:
             console.print(f"[red]:x: Analysis failed for {name}[/red]")
 
-    # Save results to JSON file
     os.makedirs(kwargs["output"], exist_ok=True)
     output_json_path = Path(kwargs["output"], "trace_results.json").resolve()
     with open(output_json_path, "w") as f:
