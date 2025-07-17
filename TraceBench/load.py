@@ -140,6 +140,5 @@ if __name__ == "__main__":
         )
     )
 
-    print(args)
 
     download_tracebench(**vars(args))
