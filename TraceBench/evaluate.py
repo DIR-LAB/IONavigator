@@ -1,7 +1,14 @@
 # from TraceBench.Scripts.Utils import get_label_codes, format_messages
 import os
 import sys
-from ION.ion.Completions.completions import generate_async_completion
+
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'ION'))
+print(project_root)
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+from ion.Completions import generate_async_completion, get_router
+from prompts import format_messages
 import asyncio
 from rich.console import Console
 from rich.panel import Panel
@@ -297,7 +304,9 @@ async def eval_sample(bench_root, sample, labels, model):
 async def eval_sample_set(bench_root, completed_samples, labels, eval_model):
     eval_results = []
     for sample in completed_samples:
-        sample_results = await eval_sample(bench_root = bench_root, sample = sample, labels = labels, model = eval_model)
+        with console.status(f"[cyan]Evaluating trace: {sample['trace_name']}...[/cyan]") as status:
+            sample_results = await eval_sample(bench_root=bench_root, sample=sample, labels=labels, model=eval_model)
+        console.print(f"[bold green]Finished evaluating trace: {sample['trace_name']}[/bold green]")
         eval_results.append(sample_results)
     return eval_results
 
@@ -426,8 +435,8 @@ def quantify_eval_results(eval_results):
     )
 
 
-def run_evaluation(**kwargs):
-    config: str = validate_file_path(kwargs['config'], f'Could not locate the config directory: {kwargs['config']}')
+async def run_evaluation(**kwargs):
+    config: str = load_json(kwargs['config'], f'Could not locate the config directory: {kwargs['config']}')
     traces_path: str = validate_file_path(os.path.join(kwargs["traces_path"], "TraceBench"), f"Could not locate the Trace Path Directory: {kwargs['traces_path']}")
     traces_result: str = load_json(kwargs['traces_results'], f"Could not locate the Trace Result JSON File: {kwargs['traces_results']}")
     output_dir: str = kwargs["output"]
@@ -451,7 +460,14 @@ def run_evaluation(**kwargs):
             sample_dicts[trace_name] = trace_dict
 
     issue_definitions: dict[str, dict[str, str]] = load_json(os.path.join(traces_path, "Dataset_Labels.json"), f"Could not find the Issue Descriptions within the TraceBench Folder: {os.path.join(traces_path, "Dataset_Labels.json")}")
-    completed_samples: list[dict[str, str | list[str]]] = list(sample_dicts.values())
+    sample_list: list[dict[str, str | list[str]]] = list(sample_dicts.values())
+
+    console.print(
+        f"[bold green]Evaluation is about to begin![/bold green][bold] {len(sample_list)}[/bold] traces will be evaluated.\n"
+    )
+    eval_results = await eval_sample_set(bench_root=os.path.join(traces_path, "Datasets"), completed_samples=sample_list, labels=issue_definitions, eval_model=config['default_model'])
+
+
 
 
 
@@ -472,6 +488,12 @@ async def main():
         type=str,
         default="../configs/default_config.json",
         help="Path to the configuration file. Defaults to ../configs/default_config.json",
+    )
+    parser.add_argument(
+        "--models",
+        type=str,
+        default = "../configs/models.json",
+        help = "Path to the models file. Defaults to ../configs/models/json"
     )
     parser.add_argument(
         "--traces_path",
@@ -498,6 +520,7 @@ async def main():
         Panel(
             f"[bold]Configuration Arguments:[/bold]\n"
             f"Config File: {args.config}\n"
+            f"Models File: {args.models}\n"
             f"Traces Path: {args.traces_path}\n"
             f"Traces Results Path: {args.traces_results}\n"
             f"Output Directory: {args.output}",
@@ -507,8 +530,10 @@ async def main():
         )
     )
 
+    get_router(load_json(args.models, f"Could not successfully load the models dictionary: {args.models}")['models'])
+
     # Run the entire analysis
-    run_evaluation(
+    await run_evaluation(
         config=args.config,
         traces_path=args.traces_path,
         traces_results=args.traces_results,
