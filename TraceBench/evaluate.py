@@ -59,154 +59,6 @@ def load_json(file_path, error_msg: str) -> dict[Any, Any] | FileNotFoundError:
     return data
 
 
-async def eval_ranking_set(samples, model, bench_root):
-    label_codes = get_label_codes(bench_root)
-    completed_samples = {}
-    criterium = ["Accuracy", "Utility", "Interpretability"]
-
-    async def process_sample(sample):
-        print("\n\n")
-        print("sample: ", sample)
-        print("\n\n")
-        sample_result = {}
-        for criteria in criterium:
-            sample_result[criteria] = {}
-            for rotate_by in range(4):
-
-                sample_labels = {
-                    label_codes[label]["Title"]: label_codes[label]["Description"]
-                    for label in sample["labels"]
-                }
-                kwargs = {
-                    "rank_criteria": criteria,
-                    "labels": sample_labels,
-                    "rotate_by": rotate_by,
-                }
-                if sample["drishti_diagnosis"] == "":
-                    kwargs["Drishti_diagnosis"] = "Diagnosis failed."
-                else:
-                    kwargs["Drishti_diagnosis"] = sample["drishti_diagnosis"]
-                if sample["ion_diagnosis"] == "":
-                    kwargs["ION1_diagnosis"] = "Diagnosis failed."
-                else:
-                    kwargs["ION1_diagnosis"] = sample["ion_diagnosis"]
-                if sample["ion2_diagnosis"] == "":
-                    kwargs["ION2_diagnosis"] = "Diagnosis failed."
-                else:
-                    kwargs["ION2_diagnosis"] = sample["ion2_diagnosis"]
-                if kwargs["ION2_diagnosis"] == "Diagnosis failed.":
-                    kwargs["ION2_Llama_diagnosis"] = "Diagnosis failed."
-                else:
-                    kwargs["ION2_Llama_diagnosis"] = sample["ion2_llama_diagnosis"]
-                messages = format_messages("compare_diagnoses", kwargs)
-                response = await generate_async_completion(model, messages)
-                tool_ranks, explanation = extract_rank_response_content(response)
-                if rotate_by == 0:
-                    sample_result[criteria]["ION2_rank"] = int(tool_ranks[0])
-                    sample_result[criteria]["ION1_rank"] = int(tool_ranks[1])
-                    sample_result[criteria]["drishti_rank"] = int(tool_ranks[2])
-                    sample_result[criteria]["ION2_Llama_rank"] = int(tool_ranks[3])
-
-                else:
-                    sample_result[criteria]["ION2_rank"] += int(tool_ranks[0])
-                    sample_result[criteria]["ION1_rank"] += int(tool_ranks[1])
-                    sample_result[criteria]["drishti_rank"] += int(tool_ranks[2])
-                    sample_result[criteria]["ION2_Llama_rank"] += int(tool_ranks[3])
-                sample_result[criteria][f"explanation_{rotate_by}"] = explanation
-                tool_ranks_str = [
-                    f"{tool}: {rank}"
-                    for tool, rank in zip(
-                        ["ION-2", "Drishti", "ION-1", "ION-2 Llama"], tool_ranks
-                    )
-                ]
-                print(f"Ranked Diagnoses based on {criteria}: {tool_ranks_str}")
-                print(f"Explanation: {explanation}")
-        print("\n\n\n")
-        return sample["source_dir"], sample["trace_name"], sample_result
-
-    tasks = [process_sample(sample) for sample in samples]
-    results = await asyncio.gather(*tasks)
-
-    for source_dir, trace_name, result in results:
-        if source_dir not in completed_samples:
-            completed_samples[source_dir] = {}
-        completed_samples[source_dir][trace_name] = result
-
-    return completed_samples
-
-
-def quantify_ranking_results(eval_results):
-    quantified_results = {
-        "Overall": {
-            "Accuracy": {"Drishti": 0, "ION-1": 0, "ION-2": 0, "ION-2 Llama": 0},
-            "Utility": {"Drishti": 0, "ION-1": 0, "ION-2": 0, "ION-2 Llama": 0},
-            "Interpretability": {
-                "Drishti": 0,
-                "ION-1": 0,
-                "ION-2": 0,
-                "ION-2 Llama": 0,
-            },
-            "Total": {"Drishti": 0, "ION-1": 0, "ION-2": 0, "ION-2 Llama": 0},
-        }
-    }
-
-    for source_dir in eval_results:
-        quantified_results[source_dir] = {
-            "Accuracy": {"Drishti": 0, "ION-1": 0, "ION-2": 0, "ION-2 Llama": 0},
-            "Utility": {"Drishti": 0, "ION-1": 0, "ION-2": 0, "ION-2 Llama": 0},
-            "Interpretability": {
-                "Drishti": 0,
-                "ION-1": 0,
-                "ION-2": 0,
-                "ION-2 Llama": 0,
-            },
-            "Total": {"Drishti": 0, "ION-1": 0, "ION-2": 0, "ION-2 Llama": 0},
-        }
-
-        total_samples = len(eval_results[source_dir])
-
-        for sample in eval_results[source_dir].values():
-            for criterion in ["Accuracy", "Utility", "Interpretability"]:
-                for tool, rank_key in [
-                    ("Drishti", "drishti_rank"),
-                    ("ION-1", "ION1_rank"),
-                    ("ION-2", "ION2_rank"),
-                    ("ION-2 Llama", "ION2_Llama_rank"),
-                ]:
-                    score = 16 - sample[criterion][rank_key]
-                    quantified_results[source_dir][criterion][tool] += score
-                    quantified_results["Overall"][criterion][tool] += score
-
-        # Normalize scores for this source_dir
-        for criterion in ["Accuracy", "Utility", "Interpretability"]:
-            for tool in ["Drishti", "ION-1", "ION-2", "ION-2 Llama"]:
-                quantified_results[source_dir][criterion][tool] /= (
-                    12 * total_samples
-                )  # Max score per sample is 3
-                quantified_results[source_dir]["Total"][tool] += quantified_results[
-                    source_dir
-                ][criterion][tool]
-
-        # Calculate total average for this source_dir
-        for tool in ["Drishti", "ION-1", "ION-2", "ION-2 Llama"]:
-            quantified_results[source_dir]["Total"][tool] /= 3  # Average of 3 criteria
-
-    # Calculate overall scores
-    total_samples = sum(len(samples) for samples in eval_results.values())
-    for criterion in ["Accuracy", "Utility", "Interpretability"]:
-        for tool in ["Drishti", "ION-1", "ION-2", "ION-2 Llama"]:
-            quantified_results["Overall"][criterion][tool] /= 12 * total_samples
-            quantified_results["Overall"]["Total"][tool] += quantified_results[
-                "Overall"
-            ][criterion][tool]
-
-    # Calculate overall average
-    for tool in ["Drishti", "ION-1", "ION-2", "ION-2 Llama"]:
-        quantified_results["Overall"]["Total"][tool] /= 3  # Average of 3 criteria
-
-    return quantified_results
-
-
 def extract_response_content(prompt_type, response):
     if prompt_type == "check_no_issue":
         # Result: <Result of the check; must be either 'No issues identified' or 'False Positives Identified'>
@@ -316,7 +168,11 @@ async def eval_sample_set(bench_root, completed_samples, labels, eval_model):
         console.print(
             f"[bold green]Finished evaluating trace: {sample['trace_name']}[/bold green]"
         )
+
+        # TODO: Create per trace visualizations of the performance
+
         eval_results.append(sample_results)
+        
     return eval_results
 
 
@@ -536,14 +392,6 @@ async def run_evaluation(**kwargs):
     final_results_path = os.path.join(output_dir, "evaluation_results.json")
     with open(final_results_path, "w") as f:
         json.dump(quantified_eval_results, f, indent=4)
-
-
-async def get_eval_results(eval_model, bench_root):
-    with open(COMPLETED_SAMPLES_FILE, "r") as f:
-        completed_samples = json.load(f)
-    completed_samples = refresh_sample_labels(completed_samples, bench_root)
-    eval_results = await eval_sample_set(bench_root, completed_samples, eval_model)
-    return eval_results
 
 
 async def main():
