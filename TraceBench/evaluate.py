@@ -2,7 +2,7 @@
 import os
 import sys
 
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'ION'))
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "ION"))
 print(project_root)
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
@@ -18,6 +18,7 @@ import json
 from typing import Callable, Any
 
 import re
+from rich.columns import Columns
 
 # TODO: When we modify the structure for TraceBench, we will want to update these paths
 COMPLETED_SAMPLES_FILE = "./"
@@ -47,14 +48,16 @@ def validate_file_path(file_path: str, error_msg: str) -> str | FileNotFoundErro
         return file_path
     else:
         raise FileNotFoundError(error_msg)
-    
-def load_json(file_path, error_msg: str) -> dict[Any, Any] | FileNotFoundError:
-    file_path = validate_file_path(file_path = file_path, error_msg=error_msg)
 
-    with open(file_path, 'r') as f:
+
+def load_json(file_path, error_msg: str) -> dict[Any, Any] | FileNotFoundError:
+    file_path = validate_file_path(file_path=file_path, error_msg=error_msg)
+
+    with open(file_path, "r") as f:
         data = json.load(f)
-    
+
     return data
+
 
 async def eval_ranking_set(samples, model, bench_root):
     label_codes = get_label_codes(bench_root)
@@ -304,9 +307,15 @@ async def eval_sample(bench_root, sample, labels, model):
 async def eval_sample_set(bench_root, completed_samples, labels, eval_model):
     eval_results = []
     for sample in completed_samples:
-        with console.status(f"[cyan]Evaluating trace: {sample['trace_name']}...[/cyan]") as status:
-            sample_results = await eval_sample(bench_root=bench_root, sample=sample, labels=labels, model=eval_model)
-        console.print(f"[bold green]Finished evaluating trace: {sample['trace_name']}[/bold green]")
+        with console.status(
+            f"[cyan]Evaluating trace: {sample['trace_name']}...[/cyan]"
+        ) as status:
+            sample_results = await eval_sample(
+                bench_root=bench_root, sample=sample, labels=labels, model=eval_model
+            )
+        console.print(
+            f"[bold green]Finished evaluating trace: {sample['trace_name']}[/bold green]"
+        )
         eval_results.append(sample_results)
     return eval_results
 
@@ -399,28 +408,52 @@ def quantify_eval_results(eval_results):
             + per_label_results[label]["fn"]
         )
 
-    print(f"True Positives: {total_tp}")
-    print(f"True Negatives: {total_tn}")
-    print(f"False Positives: {total_fp}")
-    print(f"False Negatives: {total_fn}")
-    print(f"Total Results: {total_results}")
-    print(f"Precision: {precision:.2f}")
-    print(f"Recall: {recall:.2f}")
-    print(f"F1 Score: {f1:.2f}")
-    print(f"Accuracy: {accuracy:.2f}")
-    print("Per Label Results:")
-    for label in per_label_results:
-        print(
-            f"{label}: Precision: {per_label_results[label]['precision']:.2f}, "
-            f"Recall: {per_label_results[label]['recall']:.2f}, "
-            f"F1 Score: {per_label_results[label]['f1']:.2f}, "
-            f"Accuracy: {per_label_results[label]['accuracy']:.2f}, "
-            f"Total TP: {per_label_results[label]['total_tp']}, "
-            f"Total TN: {per_label_results[label]['total_tn']}, "
-            f"Total FP: {per_label_results[label]['total_fp']}, "
-            f"Total FN: {per_label_results[label]['total_fn']}, "
-            f"Total Results: {per_label_results[label]['total_results']}"
+    result_text = ""
+    result_text += f"[gray]True Positives[/gray]: [bold]{total_tp}[/bold]\n"
+    result_text += f"[gray]True Negatives[/gray]: [bold]{total_tn}[/bold]\n"
+    result_text += f"[gray]False Positives[/gray]: [bold]{total_fp}[/bold]\n"
+    result_text += f"[gray]False Negatives[/gray]: [bold]{total_fn}[/bold]\n"
+    result_text += f"[green]Total Results[/green]: [bold]{total_results}[/bold]\n"
+    result_text += f"[gray]Precision[/gray]: [bold]{precision:.2f}[/bold]\n"
+    result_text += f"[gray]Recall[/gray]: [bold]{recall:.2f}[/bold]\n"
+    result_text += f"[gray]F1 Score[/gray]: [bold]{f1:.2f}[/bold]\n"
+    result_text += f"[gray]Accuracy[/gray]: [bold]{accuracy:.2f}[/bold]\n"
+    console.print(
+        Panel(
+            result_text,
+            title="Final Metric Results",
+            expand=False,
+            border_style="green",
         )
+    )
+
+    label_panels = []
+    for label in per_label_results:
+        label_result = per_label_results[label]
+        label_text = (
+            f"[gray]Precision[/gray]: [bold]{label_result['precision']:.2f}[/bold]\n"
+            f"[gray]Recall[/gray]: [bold]{label_result['recall']:.2f}[/bold]\n"
+            f"[gray]F1 Score[/gray]: [bold]{label_result['f1']:.2f}[/bold]\n"
+            f"[gray]Accuracy[/gray]: [bold]{label_result['accuracy']:.2f}[/bold]\n"
+            f"[gray]True Positives[/gray]: [bold]{label_result['total_tp']}[/bold]\n"
+            f"[gray]True Negatives[/gray]: [bold]{label_result['total_tn']}[/bold]\n"
+            f"[gray]False Positives[/gray]: [bold]{label_result['total_fp']}[/bold]\n"
+            f"[gray]False Negatives[/gray]: [bold]{label_result['total_fn']}[/bold]\n"
+            f"[green]Total Results[/green]: [bold]{label_result['total_results']}[/bold]\n"
+        )
+        label_panels.append(
+            Panel(
+                label_text, title=f"[b]{label}[/b]", expand=False, border_style="blue"
+            )
+        )
+
+    overall_panel = Panel(
+        Columns(label_panels, expand=True),
+        title="[b]Label Specific Metrics[/b]",
+        expand=True,
+        border_style="cyan",
+    )
+    console.print(overall_panel)
 
     return (
         per_label_results,
@@ -436,9 +469,17 @@ def quantify_eval_results(eval_results):
 
 
 async def run_evaluation(**kwargs):
-    config: str = load_json(kwargs['config'], f'Could not locate the config directory: {kwargs['config']}')
-    traces_path: str = validate_file_path(os.path.join(kwargs["traces_path"], "TraceBench"), f"Could not locate the Trace Path Directory: {kwargs['traces_path']}")
-    traces_result: str = load_json(kwargs['traces_results'], f"Could not locate the Trace Result JSON File: {kwargs['traces_results']}")
+    config: str = load_json(
+        kwargs["config"], f"Could not locate the config directory: {kwargs['config']}"
+    )
+    traces_path: str = validate_file_path(
+        os.path.join(kwargs["traces_path"], "TraceBench"),
+        f"Could not locate the Trace Path Directory: {kwargs['traces_path']}",
+    )
+    traces_result: str = load_json(
+        kwargs["traces_results"],
+        f"Could not locate the Trace Result JSON File: {kwargs['traces_results']}",
+    )
     output_dir: str = kwargs["output"]
     sample_dicts: dict[str, dict[str | list[str]]] = {}
 
@@ -448,27 +489,53 @@ async def run_evaluation(**kwargs):
     trace_dataset_labels: dict[str, list[str]] = {}
 
     for module in traces_result:
-        module_path: str = os.path.join(traces_path, "Datasets", module, "trace_labels.json")
-        module_labels: dict[str, str] = module_dataset_labels.setdefault(module, load_json(module_path, f"Could not find a valid module directory in the TraceBench directory for {module}: {module_path}"))
-        for trace_name, trace_diagnosis_path in [tuple(item.items())[0] for item in traces_result[module]]:
-            trace_dict = sample_dicts.setdefault(trace_name, {'trace_name': trace_name})
-            trace_dict['labels'] = module_labels[trace_name]
-            trace_diagnosis: dict[str, str] = load_json(trace_diagnosis_path, f"Could not the Final Diagnosis JSON File for {trace_name}: {trace_diagnosis_path}")
-            trace_dict["generated_summary"] = trace_diagnosis['diagnosis']
-            trace_dict['source_dir'] = os.path.join(traces_path, "Datasets", module, "processed_traces", trace_name)
+        module_path: str = os.path.join(
+            traces_path, "Datasets", module, "trace_labels.json"
+        )
+        module_labels: dict[str, str] = module_dataset_labels.setdefault(
+            module,
+            load_json(
+                module_path,
+                f"Could not find a valid module directory in the TraceBench directory for {module}: {module_path}",
+            ),
+        )
+        for trace_name, trace_diagnosis_path in [
+            tuple(item.items())[0] for item in traces_result[module]
+        ]:
+            trace_dict = sample_dicts.setdefault(trace_name, {"trace_name": trace_name})
+            trace_dict["labels"] = module_labels[trace_name]
+            trace_diagnosis: dict[str, str] = load_json(
+                trace_diagnosis_path,
+                f"Could not the Final Diagnosis JSON File for {trace_name}: {trace_diagnosis_path}",
+            )
+            trace_dict["generated_summary"] = trace_diagnosis["diagnosis"]
+            trace_dict["source_dir"] = os.path.join(
+                traces_path, "Datasets", module, "processed_traces", trace_name
+            )
 
             sample_dicts[trace_name] = trace_dict
 
-    issue_definitions: dict[str, dict[str, str]] = load_json(os.path.join(traces_path, "Dataset_Labels.json"), f"Could not find the Issue Descriptions within the TraceBench Folder: {os.path.join(traces_path, "Dataset_Labels.json")}")
+    issue_definitions: dict[str, dict[str, str]] = load_json(
+        os.path.join(traces_path, "Dataset_Labels.json"),
+        f"Could not find the Issue Descriptions within the TraceBench Folder: {os.path.join(traces_path, "Dataset_Labels.json")}",
+    )
     sample_list: list[dict[str, str | list[str]]] = list(sample_dicts.values())
 
     console.print(
         f"[bold green]Evaluation is about to begin![/bold green][bold] {len(sample_list)}[/bold] traces will be evaluated.\n"
     )
-    eval_results = await eval_sample_set(bench_root=os.path.join(traces_path, "Datasets"), completed_samples=sample_list, labels=issue_definitions, eval_model=config['default_model'])
+    eval_results = await eval_sample_set(
+        bench_root=os.path.join(traces_path, "Datasets"),
+        completed_samples=sample_list,
+        labels=issue_definitions,
+        eval_model=config["default_model"],
+    )
 
+    quantified_eval_results = quantify_eval_results(eval_results)
 
-
+    final_results_path = os.path.join(output_dir, "evaluation_results.json")
+    with open(final_results_path, "w") as f:
+        json.dump(quantified_eval_results, f, indent=4)
 
 
 async def get_eval_results(eval_model, bench_root):
@@ -492,8 +559,8 @@ async def main():
     parser.add_argument(
         "--models",
         type=str,
-        default = "../configs/models.json",
-        help = "Path to the models file. Defaults to ../configs/models/json"
+        default="../configs/models.json",
+        help="Path to the models file. Defaults to ../configs/models/json",
     )
     parser.add_argument(
         "--traces_path",
@@ -530,7 +597,12 @@ async def main():
         )
     )
 
-    get_router(load_json(args.models, f"Could not successfully load the models dictionary: {args.models}")['models'])
+    get_router(
+        load_json(
+            args.models,
+            f"Could not successfully load the models dictionary: {args.models}",
+        )["models"]
+    )
 
     # Run the entire analysis
     await run_evaluation(
