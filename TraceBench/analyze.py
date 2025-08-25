@@ -11,6 +11,8 @@ from rich.panel import Panel
 import sys
 import argparse
 from pathlib import Path
+import concurrent.futures
+import itertools
 
 MODULES = ["IO500", "real_app_bench", "single_issue_bench"]
 
@@ -50,27 +52,76 @@ def get_trace_directories(
 
 
 def run_ion_analysis(
-    trace: str, config_file: dict[str, str | int | dict[str, str | bool]]
-):
-    """Run the ION analysis on a specific trace
+    trace: str, config_file: str, analysis_root: str
+) -> tuple[str, dict[str, str]] | None:
+    """Run the ION analysis on a specific trace and return the result.
 
     Args:
-        trace (str): the file path of the trace to be evaluated on
-        config_file (dict[str, str  |  int  |  dict[str, str  |  bool]]): the config file to utilize while running ION
+        trace (str): The file path of the trace to be evaluated on.
+        config_file (str): The path to the config file to use while running ION.
+        analysis_root (str): The root directory where analysis outputs are stored.
 
     Returns:
-        bool: boolean to indicate if the process successfully ran
+        tuple[str, dict[str, str]] | None: A tuple containing the module and result dictionary, or None if analysis failed.
     """
+    name = os.path.basename(trace)
+    console.print(
+        Panel(
+            f"Processing trace: [bold cyan]{name}[/bold cyan]",
+            title="Trace Processing",
+            expand=False,
+            border_style="blue",
+        )
+    )
 
-    # TODO: Change th: is a parallel process potentially that can speed up the execution of many traces at once?
     result = subprocess.run(
         [sys.executable, "run.py", "--config", config_file, "--trace_path", trace],
-        capture_output=False,
+        capture_output=True,
         text=True,
         cwd="../ION/",
     )
 
-    return result.returncode == 0
+    if result.returncode == 0:
+        console.print(
+            f"[green]:heavy_check_mark: Successfully Ran IONavigator for {name}[/green]"
+        )
+        diagnosis_file = Path(
+            os.path.join(
+                "..",
+                "ION",
+                analysis_root,
+                name,
+                "final_diagnosis",
+                "final_diagnosis.json",
+            )
+        ).resolve()
+        if os.path.exists(diagnosis_file):
+            module = Path(trace).parent.parent.name
+
+            if module not in MODULES:
+                console.print(
+                    f"[yellow]:warning: Directory structure for the traces does not follow regular format for {name}. Defaulting to 'other'."
+                )
+                module = "other"
+
+            console.print(
+                Panel(
+                    f"The file is located at [medium_orchid][link=file://{diagnosis_file}]{diagnosis_file}[/link][/medium_orchid]",
+                    title=f"Found diagnosis file for {name}",
+                    expand=False,
+                    border_style="purple",
+                )
+            )
+            return module, {name: str(diagnosis_file)}
+        else:
+            console.print(
+                f"[yellow]:warning: No diagnosis file found for {name} at {diagnosis_file}[/yellow]"
+            )
+            return None
+    else:
+        console.print(f"[red]:x: Analysis failed for {name}[/red]")
+        console.print(f"[bold]Stderr for {name}:[/bold]\n{result.stderr}")
+        return None
 
 
 def main(**kwargs):
@@ -78,8 +129,8 @@ def main(**kwargs):
     # TODO: Change all of these print statements to logging statements eventually as well
 
     with open(kwargs["config"], "r") as f:
-        config_file = json.load(f)
-    analysis_root = config_file["analysis_root"]
+        config_file_data = json.load(f)
+    analysis_root = config_file_data["analysis_root"]
 
     if kwargs["modules"] == "all":
         traces, trace_names = get_trace_directories(kwargs["traces_path"], MODULES)
@@ -92,64 +143,49 @@ def main(**kwargs):
 
     # Dictionary to store results
     results = {}
-
-    for trace, name in zip(traces, trace_names):
-        console.print(
-            Panel(
-                f"Processing trace: [bold cyan]{name}[/bold cyan]",
-                title="Trace Processing",
-                expand=False,
-                border_style="blue",
-            )
-        )
-
-        # Run ION analysis
-        success = run_ion_analysis(trace, kwargs["config"])
-
-        if success:
-            console.print(
-                f"[green]:heavy_check_mark: Successfully Ran IONavigator for {name}[/green]"
-            )
-            # Find the diagnosis file
-            diagnosis_file = Path(
-                os.path.join(
-                    "..",
-                    "ION",
-                    analysis_root,
-                    name,
-                    "final_diagnosis",
-                    "final_diagnosis.json",
-                )
-            ).resolve()
-            if os.path.exists(diagnosis_file):
-                module = Path(trace).parent.parent.name
-                
-                if module not in MODULES:
-                    console.print(f"[yellow]:warning: Directory structure for the traces is does not follow regular format; expected to have module name two parents above trace name. \n Expected one of {''.join(MODULES)}, got {module} instead. \n Defaulting to 'other' for module.")
-                    module = 'other'
-                
-                results.setdefault(module, []).append({name: str(diagnosis_file)})
-
-                console.print(
-                    Panel(
-                        f"The file is located at [medium_orchid][link=file://{diagnosis_file}]{diagnosis_file}[/link][/medium_orchid]",
-                        title="Found diagnosis file",
-                        expand=False,
-                        border_style="purple",
-                    )
-                )
-            else:
-                console.print(
-                    f"[yellow]:warning: No diagnosis file found for {name} at {diagnosis_file}[/yellow]"
-                )
-        else:
-            console.print(f"[red]:x: Analysis failed for {name}[/red]")
+    
+    with concurrent.futures.ProcessPoolExecutor(max_workers=kwargs['concurrency']) as executor:
+        # Use executor.map to run analyses in parallel
+        future_to_trace = {executor.submit(run_ion_analysis, trace, kwargs["config"], analysis_root): trace for trace in traces}
+        
+        for future in concurrent.futures.as_completed(future_to_trace):
+            result = future.result()
+            if result:
+                module, res_dict = result
+                results.setdefault(module, []).append(res_dict)
 
     os.makedirs(kwargs["output"], exist_ok=True)
     output_json_path = Path(kwargs["output"], "trace_results.json").resolve()
+    
+    # If the file already exists, read the existing results and merge
+    existing_results = {}
+    if os.path.exists(output_json_path):
+        with open(output_json_path, 'r') as f:
+            try:
+                existing_results = json.load(f)
+            except json.JSONDecodeError:
+                console.print(f"[yellow]Warning: Could not decode existing results file at {output_json_path}. It will be overwritten.[/yellow]")
+
+    # Merge new results into existing ones
+    for module, res_list in results.items():
+        if module not in existing_results:
+            existing_results[module] = []
+        
+        # Create a map of existing names for quick lookup
+        existing_names = {list(item.keys())[0] for item in existing_results[module]}
+        for res in res_list:
+            name = list(res.keys())[0]
+            if name not in existing_names:
+                existing_results[module].append(res)
+            else:
+                # Update existing entry
+                for i, old_res in enumerate(existing_results[module]):
+                    if list(old_res.keys())[0] == name:
+                        existing_results[module][i] = res
+                        break
+
     with open(output_json_path, "w") as f:
-        # TODO: We might want to modify this so that existing trace runs / paths are not entirely removed but just ones with the same keys are overridden with the new file path values
-        json.dump(results, f, indent=4)
+        json.dump(existing_results, f, indent=4)
 
     console.print(
         Panel(
@@ -182,7 +218,7 @@ if __name__ == "__main__":
         "--modules",
         nargs="+",
         default="all",
-        choices=MODULES,
+        choices=MODULES + ["all"],
         help="specify a specific module to run Tracebench against (choice either IO500, multi_issue_bench, single_issue_bench or real_app_bench)",
     )
     parser.add_argument(
@@ -190,6 +226,12 @@ if __name__ == "__main__":
         type=str,
         default="TraceBench_Output",
         help="Set the directory for analysis output. Defaults to ./TraceBench_Output",
+    )
+    parser.add_argument(
+        "--concurrency",
+        type=int,
+        default=os.cpu_count(),
+        help="Set the number of parallel processes to run. Defaults to the number of CPU cores.",
     )
     args = parser.parse_args()
 
@@ -199,7 +241,8 @@ if __name__ == "__main__":
             f"Config File: {args.config}\n"
             f"Traces Path: {args.traces_path}\n"
             f"Modules: {args.modules}\n"
-            f"Output Directory: {args.output}",
+            f"Output Directory: {args.output}\n"
+            f"Concurrency: {args.concurrency}",
             title="[b]Script Configuration[/b]",
             expand=False,
             border_style="magenta",
@@ -212,4 +255,5 @@ if __name__ == "__main__":
         traces_path=args.traces_path,
         modules=args.modules,
         output=args.output,
+        concurrency=args.concurrency,
     )
