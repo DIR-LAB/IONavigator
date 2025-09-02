@@ -55,7 +55,7 @@ async def generate_rag_diagnosis(config):
 
     async def process_file(file, rag_enabled=True):
         rag_diagnosis_logger.info(f"Processing file: {file}")
-        async with aiofiles.open(os.path.join(summary_dir, file), "r") as f:
+        async with aiofiles.open(os.path.join(summary_dir, file), "r", encoding="utf-8", errors = 'replace') as f:
             description = await f.read()
 
         if rag_enabled:
