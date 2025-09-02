@@ -10,9 +10,14 @@ from rich.console import Console
 from rich.panel import Panel
 import sys
 import argparse
+import copy
+import asyncio
 from pathlib import Path
 import concurrent.futures
 import itertools
+from run_ion import load_rag_index, run_ION
+from llama_index.core.query_engine import CitationQueryEngine
+from llama_index.core.response_synthesizers import ResponseMode
 
 MODULES = ["IO500", "real_app_bench", "single_issue_bench"]
 
@@ -51,8 +56,13 @@ def get_trace_directories(
     return trace_paths, trace_names
 
 
-def run_ion_analysis(
-    trace: str, config_file: str, analysis_root: str
+# TODO: Run RAG Index at beginning and then run queries (deconstruct run.py essentially)
+async def run_ion_analysis(
+    trace: str,
+    config_file: dict[str, str],
+    model_file: dict[str, str],
+    analysis_root: str,
+    index,
 ) -> tuple[str, dict[str, str]] | None:
     """Run the ION analysis on a specific trace and return the result.
 
@@ -65,6 +75,23 @@ def run_ion_analysis(
         tuple[str, dict[str, str]] | None: A tuple containing the module and result dictionary, or None if analysis failed.
     """
     name = os.path.basename(trace)
+    # Each trace needs its own config or otherwise we run into parallelism issues
+    run_config = copy.deepcopy(config_file)
+    run_config["trace_path"] = trace
+
+    # Typically, we are running ION from within the ION folder, but because are doing so from TraceBench now, we need to modify our final output directory so that it still feels like it's being run from within the that directory
+    # Ensure a unique per-trace analysis root to avoid collisions
+    base_root = run_config.get("analysis_root", analysis_root)
+
+    # If caller already prepended an absolute path keep it, else build one
+    if not os.path.isabs(base_root):
+        per_trace_root = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "..", "ION", base_root)
+        )
+    else:
+        per_trace_root = base_root
+    run_config["analysis_root"] = per_trace_root
+
     console.print(
         Panel(
             f"Processing trace: [bold cyan]{name}[/bold cyan]",
@@ -74,14 +101,18 @@ def run_ion_analysis(
         )
     )
 
-    result = subprocess.run(
-        [sys.executable, "run.py", "--config", config_file, "--trace_path", trace],
-        capture_output=True,
-        text=True,
-        cwd="../ION/",
-    )
+    console.print(f"[cyan][{name}][/cyan] Starting IONPro for [bold]{name}[/bold]...")
+    try:
+        final_diagnosis = await run_ION(run_config, model_file, index)
+    except Exception as e:
+        console.print(
+            f"[red][{name}][/red] Exception while running ION: [bold red]{e}[/bold red]"
+        )
+        final_diagnosis = None
+    console.print(f"[green][{name}][/green] Finished IONPro for [bold]{name}[/bold]")
 
-    if result.returncode == 0:
+    # consider the run successful if run_ION returned a diagnosis object
+    if final_diagnosis is not None:
         console.print(
             f"[green]:heavy_check_mark: Successfully Ran IONavigator for {name}[/green]"
         )
@@ -89,7 +120,7 @@ def run_ion_analysis(
             os.path.join(
                 "..",
                 "ION",
-                analysis_root,
+                run_config["analysis_root"],
                 name,
                 "final_diagnosis",
                 "final_diagnosis.json",
@@ -120,7 +151,6 @@ def run_ion_analysis(
             return None
     else:
         console.print(f"[red]:x: Analysis failed for {name}[/red]")
-        console.print(f"[bold]Stderr for {name}:[/bold]\n{result.stderr}")
         return None
 
 
@@ -130,6 +160,8 @@ def main(**kwargs):
 
     with open(kwargs["config"], "r") as f:
         config_file_data = json.load(f)
+    with open(kwargs["models"], "r") as f:
+        model_file_data = json.load(f)["models"]
     analysis_root = config_file_data["analysis_root"]
 
     if kwargs["modules"] == "all":
@@ -143,34 +175,80 @@ def main(**kwargs):
 
     # Dictionary to store results
     results = {}
-    
-    with concurrent.futures.ProcessPoolExecutor(max_workers=kwargs['concurrency']) as executor:
-        # Use executor.map to run analyses in parallel
-        future_to_trace = {executor.submit(run_ion_analysis, trace, kwargs["config"], analysis_root): trace for trace in traces}
-        
-        for future in concurrent.futures.as_completed(future_to_trace):
-            result = future.result()
-            if result:
-                module, res_dict = result
-                results.setdefault(module, []).append(res_dict)
+
+    # When we run the RAG diagnosis, reinitializing the Query Index again and Again can be very costly, so we do it once here
+    if config_file_data["RAG"]["enabled"]:
+        ion_dir = os.path.abspath(os.path.join("..", "ION", "ion"))
+        rag_data_dir = os.path.join(
+            ion_dir, config_file_data["RAG"]["rag_source_data_dir"]
+        )
+        rag_index_dir = os.path.join(ion_dir, config_file_data["RAG"]["rag_index_dir"])
+        embedding_model = config_file_data["RAG"]["embedding_model"]
+        reset_index = config_file_data["RAG"]["reset_index"]
+
+        with console.status(
+            f"[yellow]Initializing RAG index at: {rag_index_dir} (data: {rag_data_dir})...[/yellow]",
+            spinner="dots",
+        ):
+            # TODO: Can we also have the CitationQueryEngine initialized here?
+            QUERY_INDEX = load_rag_index(
+                rag_data_dir=rag_data_dir,
+                rag_index_dir=rag_index_dir,
+                embedding_model=embedding_model,
+                reset_index=reset_index,
+            )
+            QUERY_INDEX = CitationQueryEngine.from_args(
+                QUERY_INDEX,
+                similarity_top_k=10,
+                max_top_k=10,
+                response_mode=ResponseMode.NO_TEXT,
+            )
+    else:
+        QUERY_INDEX = None
+    console.print(
+        f"[bold green]RAG index initialization complete: {rag_index_dir}[/bold green]"
+    )
+
+    # Run analyses concurrently in this process so we can pass the in-memory QUERY_INDEX
+    async def _run_all():
+        sem = asyncio.Semaphore(kwargs.get("concurrency", os.cpu_count()))
+
+        async def _run_one(trace, name):
+            async with sem:
+                res = await run_ion_analysis(
+                    trace, config_file_data, model_file_data, analysis_root, QUERY_INDEX
+                )
+                if res:
+                    module, res_dict = res
+                    results.setdefault(module, []).append(res_dict)
+
+        tasks = [
+            asyncio.create_task(_run_one(t, n)) for t, n in zip(traces, trace_names)
+        ]
+        if tasks:
+            await asyncio.gather(*tasks)
+
+    asyncio.run(_run_all())
 
     os.makedirs(kwargs["output"], exist_ok=True)
     output_json_path = Path(kwargs["output"], "trace_results.json").resolve()
-    
+
     # If the file already exists, read the existing results and merge
     existing_results = {}
     if os.path.exists(output_json_path):
-        with open(output_json_path, 'r') as f:
+        with open(output_json_path, "r") as f:
             try:
                 existing_results = json.load(f)
             except json.JSONDecodeError:
-                console.print(f"[yellow]Warning: Could not decode existing results file at {output_json_path}. It will be overwritten.[/yellow]")
+                console.print(
+                    f"[yellow]Warning: Could not decode existing results file at {output_json_path}. It will be overwritten.[/yellow]"
+                )
 
     # Merge new results into existing ones
     for module, res_list in results.items():
         if module not in existing_results:
             existing_results[module] = []
-        
+
         # Create a map of existing names for quick lookup
         existing_names = {list(item.keys())[0] for item in existing_results[module]}
         for res in res_list:
@@ -209,6 +287,12 @@ if __name__ == "__main__":
         help="Path to the configuration file",
     )
     parser.add_argument(
+        "--models",
+        type=str,
+        default="../configs/models.json",
+        help="Path to the models file",
+    )
+    parser.add_argument(
         "--traces_path",
         default="./evaluator/",
         type=str,
@@ -239,6 +323,7 @@ if __name__ == "__main__":
         Panel(
             f"[bold]Configuration Arguments:[/bold]\n"
             f"Config File: {args.config}\n"
+            f"Models File: {args.models}\n"
             f"Traces Path: {args.traces_path}\n"
             f"Modules: {args.modules}\n"
             f"Output Directory: {args.output}\n"
@@ -252,6 +337,7 @@ if __name__ == "__main__":
     # Run the entire analysis
     main(
         config=args.config,
+        models=args.models,
         traces_path=args.traces_path,
         modules=args.modules,
         output=args.output,
