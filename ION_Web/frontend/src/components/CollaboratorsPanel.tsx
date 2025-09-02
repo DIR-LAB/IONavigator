@@ -70,7 +70,7 @@ const CollaboratorsPanel: React.FC = () => {
         <>
           <div className="panel-description">
             <p>This work was created by the <a href="https://sites.google.com/udel.edu/dirlab/home" target="_blank" rel="noopener noreferrer">DIRLab</a> team at University of Delaware in collaboration with Lawrence Berkeley National Laboratory, The Ohio State University, and NC State University.</p>
-            <p>This demo represents an ongoing extension of <a href="https://dl.acm.org/doi/10.1145/3655038.3665950" target="_blank" rel="noopener noreferrer">ION: Navigating the HPC I/O Optimization Journey using Large Language Models [HotStorage'24]</a>.</p>
+            <p>This demo represents the work <a href="https://drive.google.com/file/d/1UBqxqErz3mc0Cgvte-aBHDS7U4B5iMMw/view" target="_blank" rel="noopener noreferrer">IOAgent: Democratizing Trustworthy HPC I/O Performance Diagnosis Capability via LLMs [IPDPS'25]</a>.</p>
             <p>Any questions can be directed to lead developer, Chris Egersdoerfer at <a href="mailto:cegersdo@udel.edu">cegersdo@udel.edu</a>.</p>
           </div>
           <div className="collaborators-container">

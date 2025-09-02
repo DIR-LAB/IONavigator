@@ -29,9 +29,17 @@ if not os.path.exists(ANALYSIS_DIR):
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 1000 * 1024 * 1024
 
+ec2_origin = os.getenv("EC2_ORIGIN")
+cors_allowed_origins = [
+    "http://127.0.0.1:3000",
+    "http://localhost:3000"
+]
+if ec2_origin:
+    cors_allowed_origins.append(ec2_origin)
+
 CORS(app, resources={
     r"/api/*": {
-        "origins": ["http://127.0.0.1:3000", "http://localhost:3000", "http://3.138.157.186", "http://ec2-3-138-157-186.us-east-2.compute.amazonaws.com"],
+        "origins": cors_allowed_origins,
         "methods": ["GET", "POST", "OPTIONS"],
         "allow_headers": ["Content-Type"]
     },
@@ -57,6 +65,46 @@ def add_user():
         ).model_dump(), 400
     
     user_id, message, status_code = mongodb_client.add_user(email)
+    return UserResponse(
+        user_id=user_id,
+        message=message
+    ).model_dump(), status_code
+
+@app.route('/api/register', methods=['POST'])
+def register_user():
+    email = request.json.get('email')
+    password = request.json.get('password')
+    
+    if not email or not password:
+        return APIResponse(
+            error='Email and password are required',
+            status_code=400
+        ).model_dump(), 400
+    
+    if len(password) < 6:
+        return APIResponse(
+            error='Password must be at least 6 characters long',
+            status_code=400
+        ).model_dump(), 400
+    
+    user_id, message, status_code = mongodb_client.register_user(email, password)
+    return UserResponse(
+        user_id=user_id,
+        message=message
+    ).model_dump(), status_code
+
+@app.route('/api/login', methods=['POST'])
+def login_user():
+    email = request.json.get('email')
+    password = request.json.get('password')
+    
+    if not email or not password:
+        return APIResponse(
+            error='Email and password are required',
+            status_code=400
+        ).model_dump(), 400
+    
+    user_id, message, status_code = mongodb_client.login_user(email, password)
     return UserResponse(
         user_id=user_id,
         message=message
@@ -375,12 +423,14 @@ def upload_trace():
             except (IOError, OSError) as e:
                 return jsonify({'error': f'Failed to save temporary file: {str(e)}'}), 500
             finally:
-                # Clean up temporary file
-                if os.path.exists(temp_path):
-                    try:
-                        os.remove(temp_path)
-                    except OSError:
-                        print(f"Warning: Failed to remove temporary file {temp_path}")
+                # Clean up temporary file (disabled for debugging)
+                # TODO: Re-enable cleanup after debugging darshan-parser issues
+                print(f"Temporary file kept for debugging: {temp_path}")
+                # if os.path.exists(temp_path):
+                #     try:
+                #         os.remove(temp_path)
+                #     except OSError:
+                #         print(f"Warning: Failed to remove temporary file {temp_path}")
                         
             # Create BytesIO object with the original content for S3 upload
             file_obj = io.BytesIO(file_content)

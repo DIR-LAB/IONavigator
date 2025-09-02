@@ -13,6 +13,7 @@ import commentIcon_filled from '../assets/comment-filled-icon.svg';
 import commentIcon_empty from '../assets/comment-unfilled-icon.svg';
 import toolIcon from '../assets/tool-icon.svg';
 import { useUser } from '../contexts/UserContext';
+import '../styles/ChatWindow.css';
 
 const ChatWindow: React.FC<ChatWindowProps> = ({ selectedTrace }) => {
     const { userId } = useUser();

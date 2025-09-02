@@ -3,17 +3,27 @@ import { fetchUserTraces, deleteTrace, startAnalysis, checkAnalysisStatus, fetch
 import ChatWindow from '../components/ChatWindow';
 import OriginalTraceWindow from '../components/originalTraceWindow';
 import DiagnosisTree from '../components/DiagnosisTree';
+import AuthModal from '../components/AuthModal';
 import { Trace } from '../interface/interfaces';
 import backIcon from '../assets/back-button.svg';
-import uploadIcon from '../assets/upload-icon.svg';
 import { useUser } from '../contexts/UserContext';
-import IONLOGO from '../assets/IONLOGO.png';
+import TopBanner from '../components/TopBanner';
 import CollaboratorsPanel from '../components/CollaboratorsPanel';
 import TraceTable from '../components/TraceTable';
 import '../styles/HomePage.css';
 
 const HomePage: React.FC = () => {
-  const { userId } = useUser() || { userId: null };
+  const { 
+    userId, 
+    userEmail, 
+    isTestUser, 
+    isAuthenticated, 
+    login, 
+    register, 
+    logout, 
+    refreshUserData 
+  } = useUser() || {};
+  
   const [view, setView] = useState<'list' | 'details' | 'inspect'>('list');
   const [userTraces, setUserTraces] = useState<Array<Trace>>([]);
   const [selectedTrace, setSelectedTrace] = useState<Trace | null>(null);
@@ -24,6 +34,7 @@ const HomePage: React.FC = () => {
     progress: number;
   }}>({});
   const [treeData, setTreeData] = useState<any>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   // Add file input reference
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -38,21 +49,47 @@ const HomePage: React.FC = () => {
     { value: 'anthropic/claude-3-7-sonnet-20250219', label: 'Claude-3.7-Sonnet' },
   ];
 
-  useEffect(() => {
-    const loadUserTraces = async (userId: string) => {
-      try {
-        const data = await fetchUserTraces(userId);
-        setUserTraces(data);
-        console.log(data);
-      } catch (error) {
-        console.error('Failed to load example cases:', error);
-      }
-    };
+  const loadUserTraces = async (currentUserId: string) => {
+    try {
+      const data = await fetchUserTraces(currentUserId);
+      setUserTraces(data);
+      console.log(`Loaded ${data.length} traces for user:`, currentUserId);
+    } catch (error) {
+      console.error('Failed to load user traces:', error);
+      setUserTraces([]);
+    }
+  };
 
+  useEffect(() => {
     if (userId) {
       loadUserTraces(userId);
     }
-  }, [userId]);
+  }, [userId]); // Refresh traces when userId changes
+
+  const handleUserClick = () => {
+    if (isTestUser) {
+      setShowAuthModal(true);
+    } else {
+      // Show logout option for authenticated users
+      if (logout && window.confirm('Do you want to logout?')) {
+        logout();
+      }
+    }
+  };
+
+  const handleLogin = async (email: string, password: string) => {
+    if (login) {
+      await login(email, password);
+      // Traces will automatically refresh due to userId change
+    }
+  };
+
+  const handleRegister = async (email: string, password: string) => {
+    if (register) {
+      await register(email, password);
+      // Traces will automatically refresh due to userId change
+    }
+  };
 
   const handleTraceClick = (trace: Trace) => {
     setSelectedTrace(trace);
@@ -293,82 +330,120 @@ const HomePage: React.FC = () => {
   };
 
   return (
-    <div className="container">
+    <div className="homepage-container">
       {view === 'list' && (
         <>
-          <div className="home-page-description">
-            <img src={IONLOGO} alt="ION Logo" className="ion-logo" />
-            <h1>Welcome to the I/O Navigator!</h1>
-          </div>
-          <div className="upload-section">
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileUpload}
-              style={{ display: 'none' }}
-              accept=".txt,.darshan"
-            />
-            <button 
-              className="upload-button"
-              onClick={handleUploadClick}
-              disabled={uploading}
-            >
-              <img src={uploadIcon} alt="Upload" className="upload-icon" />
-              {uploading ? 'Uploading...' : 'Upload New Trace'}
-            </button>
-          </div>
-          <TraceTable
-            traces={userTraces}
-            onInteract={handleTraceClick}
-            onAnalyze={handleRunAnalysis}
-            onDelete={handleDeleteTrace}
-            onInspect={handleInspectTrace}
-            onRename={handleRename}
-            onStopAnalysis={handleStopAnalysis}
-            onModelChange={handleModelChange}
-            availableModels={availableModels}
-            analysisStatuses={analysisStatuses}
+          <TopBanner 
+            currentUser={userEmail}
+            isTestUser={isTestUser || false}
+            onUploadClick={handleUploadClick}
+            onUserClick={handleUserClick}
+            uploading={uploading}
           />
-          <CollaboratorsPanel />
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+            style={{ display: 'none' }}
+            accept=".txt,.darshan"
+          />
+          <div className="main-content">
+            <TraceTable
+              traces={userTraces}
+              onInteract={handleTraceClick}
+              onAnalyze={handleRunAnalysis}
+              onDelete={handleDeleteTrace}
+              onInspect={handleInspectTrace}
+              onRename={handleRename}
+              onStopAnalysis={handleStopAnalysis}
+              onModelChange={handleModelChange}
+              availableModels={availableModels}
+              analysisStatuses={analysisStatuses}
+            />
+          </div>
+          <div className="footer-section">
+            <CollaboratorsPanel />
+          </div>
         </>
       )}
       {view === 'details' && selectedTrace && userId && (
-        <div className="details-container">
-          <div className="back-button-container">
-            <button 
-              onClick={handleBackButtonClick} 
-              className="back-button" 
-              title="Back to Trace Selection"
-            >
-              <img src={backIcon} alt="Back" />
-            </button>
+        <div className="homepage-container">
+          <TopBanner 
+            currentUser={userEmail}
+            isTestUser={isTestUser || false}
+            onUploadClick={handleUploadClick}
+            onUserClick={handleUserClick}
+            uploading={uploading}
+          />
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+            style={{ display: 'none' }}
+            accept=".txt,.darshan"
+          />
+          <div className="details-main-content">
+            <div className="back-button-container">
+              <button 
+                onClick={handleBackButtonClick} 
+                className="back-button" 
+                title="Back to Trace Selection"
+              >
+                <img src={backIcon} alt="Back" />
+              </button>
+            </div>
+            <div className="trace-details-content">
+              <OriginalTraceWindow traceName={selectedTrace.trace_name} user_id={userId} />
+              <ChatWindow selectedTrace={selectedTrace} />
+            </div>
           </div>
-          <div className="side-by-side">
-            <OriginalTraceWindow traceName={selectedTrace.trace_name} user_id={userId} />
-            <ChatWindow selectedTrace={selectedTrace} />
-          </div>
-          <section className="disclaimer">
+          <div className="details-footer">
+            <section className="disclaimer">
               <p><strong>Disclaimer:</strong> As this demo is for research purposes, user interactions in the form of chat messages and like/dislike/comment feedback will be recorded. These will not be shared anywhere.</p>
             </section>
+          </div>
         </div>
       )}
       {view === 'inspect' && selectedTrace && treeData && (
-        <div className="inspect-container">
-          <div className="back-button-container">
-            <button 
-              onClick={handleBackButtonClick} 
-              className="back-button" 
-              title="Back to Trace Selection"
-            >
-              <img src={backIcon} alt="Back" />
-            </button>
-          </div>
-          <h2>Analysis Process for {selectedTrace.trace_name}</h2>
-          <div className="tree-container">
-            <DiagnosisTree treeData={treeData} />
+        <div className="homepage-container">
+          <TopBanner 
+            currentUser={userEmail}
+            isTestUser={isTestUser || false}
+            onUploadClick={handleUploadClick}
+            onUserClick={handleUserClick}
+            uploading={uploading}
+          />
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+            style={{ display: 'none' }}
+            accept=".txt,.darshan"
+          />
+          <div className="inspect-container">
+            <div className="back-button-container">
+              <button 
+                onClick={handleBackButtonClick} 
+                className="back-button" 
+                title="Back to Trace Selection"
+              >
+                <img src={backIcon} alt="Back" />
+              </button>
+            </div>
+            <h2>Analysis Process for {selectedTrace.trace_name}</h2>
+            <div className="tree-container">
+              <DiagnosisTree treeData={treeData} />
+            </div>
           </div>
         </div>
       )}
+      
+      <AuthModal 
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onLogin={handleLogin}
+        onRegister={handleRegister}
+      />
     </div>
   );
 };

@@ -12,6 +12,7 @@ import re
 
 def get_darshan_modules(trace_path):
     # look for all csv files in the directory
+    header = None
     modules = {}
     for filename in os.listdir(trace_path):
         if filename.endswith('.csv'):

@@ -10,7 +10,7 @@ import traceback
 from utils.logging import setup_logger
 from concurrent.futures import ThreadPoolExecutor
 import functools
-
+import os
 models_list = [
         {
         "model_name": "gpt-4.1-mini",
@@ -27,10 +27,18 @@ get_router(models_list)
 # Create a thread pool for CPU-intensive operations
 tool_executor = ThreadPoolExecutor(max_workers=4)
 
+ec2_origin = os.getenv("EC2_ORIGIN")
+cors_allowed_origins = [
+    "http://127.0.0.1:3000",
+    "http://localhost:3000"
+]
+if ec2_origin:
+    cors_allowed_origins.append(ec2_origin)
+
 app = Flask(__name__)
 socketio = SocketIO(
     app, 
-    cors_allowed_origins=["http://127.0.0.1:3000", "http://localhost:3000", "http://3.138.157.186", "http://ec2-3-138-157-186.us-east-2.compute.amazonaws.com"],
+    cors_allowed_origins=cors_allowed_origins,
     async_mode='threading',
     ping_timeout=60,
     ping_interval=25,

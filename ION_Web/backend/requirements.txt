@@ -56,3 +56,4 @@ open-interpreter==0.4.3
 python-socketio==5.13.0
 pandas==2.2.3
 aiofiles==24.1.0
+bcrypt==4.2.0
