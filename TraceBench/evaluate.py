@@ -207,28 +207,54 @@ async def eval_sample_set(bench_root, completed_samples, labels, eval_model, max
 
 def quantify_eval_results(eval_results):
     per_label_results = {}
+    per_trace_results = {}
     total_tp, total_tn, total_fp, total_fn = 0, 0, 0, 0
 
     for sample in eval_results:
         for result in sample:
             label = result["label"]
+            trace_name = result["trace_name"]
+            
+            # Initialize per-label results
             if label not in per_label_results:
                 per_label_results[label] = {"tp": 0, "tn": 0, "fp": 0, "fn": 0}
+            
+            # Initialize per-trace results
+            if trace_name not in per_trace_results:
+                per_trace_results[trace_name] = {
+                    "tp": 0, "tn": 0, "fp": 0, "fn": 0,
+                    "issues_present": [], "issues_identified": [],
+                    "true_positives": [], "false_positives": [], "false_negatives": []
+                }
 
             eval_result = result["eval_result"][0]
             ground_truth = result["ground_truth"]
 
+            # Track issues for per-trace analysis
+            if ground_truth:  # Issue is actually present
+                per_trace_results[trace_name]["issues_present"].append(label)
+            if eval_result:  # Issue was identified by the system
+                per_trace_results[trace_name]["issues_identified"].append(label)
+
+            # Calculate confusion matrix values
             if eval_result and ground_truth:
                 per_label_results[label]["tp"] += 1
+                per_trace_results[trace_name]["tp"] += 1
+                per_trace_results[trace_name]["true_positives"].append(label)
                 total_tp += 1
             elif not eval_result and not ground_truth:
                 per_label_results[label]["tn"] += 1
+                per_trace_results[trace_name]["tn"] += 1
                 total_tn += 1
             elif eval_result and not ground_truth:
                 per_label_results[label]["fp"] += 1
+                per_trace_results[trace_name]["fp"] += 1
+                per_trace_results[trace_name]["false_positives"].append(label)
                 total_fp += 1
             else:
                 per_label_results[label]["fn"] += 1
+                per_trace_results[trace_name]["fn"] += 1
+                per_trace_results[trace_name]["false_negatives"].append(label)
                 total_fn += 1
 
     total_results = total_tp + total_tn + total_fp + total_fn
@@ -293,6 +319,24 @@ def quantify_eval_results(eval_results):
             + per_label_results[label]["fn"]
         )
 
+    # Calculate per-trace metrics
+    for trace_name in per_trace_results:
+        trace_tp = per_trace_results[trace_name]["tp"]
+        trace_tn = per_trace_results[trace_name]["tn"]
+        trace_fp = per_trace_results[trace_name]["fp"]
+        trace_fn = per_trace_results[trace_name]["fn"]
+        
+        trace_precision = trace_tp / (trace_tp + trace_fp) if (trace_tp + trace_fp) > 0 else 0
+        trace_recall = trace_tp / (trace_tp + trace_fn) if (trace_tp + trace_fn) > 0 else 0
+        trace_f1 = (2 * (trace_precision * trace_recall) / (trace_precision + trace_recall) 
+                   if (trace_precision + trace_recall) > 0 else 0)
+        trace_accuracy = (trace_tp + trace_tn) / trace_total if trace_total > 0 else 0
+        
+        per_trace_results[trace_name]["precision"] = trace_precision
+        per_trace_results[trace_name]["recall"] = trace_recall
+        per_trace_results[trace_name]["f1"] = trace_f1
+        per_trace_results[trace_name]["accuracy"] = trace_accuracy
+
     result_text = ""
     result_text += f"[gray]True Positives[/gray]: [bold]{total_tp}[/bold]\n"
     result_text += f"[gray]True Negatives[/gray]: [bold]{total_tn}[/bold]\n"
@@ -312,7 +356,7 @@ def quantify_eval_results(eval_results):
         )
     )
 
-    # TODO: Create a rich visualization but also a textualize one with bar charts nd such 
+    # TODO: Create a rich visualization but also a textualize one with bar charts and such 
     label_panels = []
     for label in per_label_results:
         label_result = per_label_results[label]
@@ -341,8 +385,49 @@ def quantify_eval_results(eval_results):
     )
     console.print(overall_panel)
 
+    # Create per-trace metrics panels
+    trace_panels = []
+    for trace_name in per_trace_results:
+        trace_result = per_trace_results[trace_name]
+        
+        # Format lists of issues
+        issues_present_str = ", ".join(trace_result["issues_present"]) if trace_result["issues_present"] else "None"
+        issues_identified_str = ", ".join(trace_result["issues_identified"]) if trace_result["issues_identified"] else "None"
+        true_positives_str = ", ".join(trace_result["true_positives"]) if trace_result["true_positives"] else "None"
+        false_positives_str = ", ".join(trace_result["false_positives"]) if trace_result["false_positives"] else "None"
+        false_negatives_str = ", ".join(trace_result["false_negatives"]) if trace_result["false_negatives"] else "None"
+        
+        trace_text = (
+            f"[yellow]Issues Present[/yellow]: [bold]{issues_present_str}[/bold]\n"
+            f"[cyan]Issues Identified[/cyan]: [bold]{issues_identified_str}[/bold]\n"
+            f"[green]True Positives[/green]: [bold]{true_positives_str}[/bold]\n"
+            f"[red]False Positives[/red]: [bold]{false_positives_str}[/bold]\n"
+            f"[red]False Negatives[/red]: [bold]{false_negatives_str}[/bold]\n\n"
+            f"[gray]Precision[/gray]: [bold]{trace_result['precision']:.2f}[/bold]\n"
+            f"[gray]Recall[/gray]: [bold]{trace_result['recall']:.2f}[/bold]\n"
+            f"[gray]F1 Score[/gray]: [bold]{trace_result['f1']:.2f}[/bold]\n"
+            f"[gray]Accuracy[/gray]: [bold]{trace_result['accuracy']:.2f}[/bold]\n"
+        )
+        trace_panels.append(
+            Panel(
+                trace_text, 
+                title=f"[b]{trace_name}[/b]", 
+                expand=False, 
+                border_style="magenta"
+            )
+        )
+
+    trace_overall_panel = Panel(
+        Columns(trace_panels, expand=True),
+        title="[b]Per-Trace Performance Metrics[/b]",
+        expand=True,
+        border_style="yellow",
+    )
+    console.print(trace_overall_panel)
+
     return (
         per_label_results,
+        per_trace_results,
         total_tp,
         total_tn,
         total_fp,
