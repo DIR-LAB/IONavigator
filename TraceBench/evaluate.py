@@ -1,3 +1,7 @@
+"""
+Evaluate the results of the IONPro analysis with heuristic and LLM-based metrics
+"""
+
 # from TraceBench.Scripts.Utils import get_label_codes, format_messages
 import os
 import sys
@@ -24,21 +28,6 @@ from rich.columns import Columns
 COMPLETED_SAMPLES_FILE = "./"
 
 console = Console()
-
-"""
-    Overall structure of what needs to be done:
-    - Retrieve ground-truth labels for each trace (housed within respective module folders under trace_labels.json)
-    - Retrieve the Dataset Labels (Definitions) from Dataset_Labels.json (housed within the root eval folder)
-    - Leverage eval_sample as a guide on how to get prompt the LLM to get the TP, FP, TN, FN from the responses
-        - bench_root is the path to the root of the benchmark dataset (probably eval/Datasets/ in this case)
-        - sample is a dict that includes
-            - the summary (generated_summary)
-            - labels that is a list of the ground-truth (labels)
-            - the source directory in which the trace comes from (source_dir)
-            - the name of the trace (trace_name)
-        - eval model, which we can likely just extract from the config file
-
-"""
 
 
 def validate_file_path(file_path: str, error_msg: str) -> str | FileNotFoundError:
