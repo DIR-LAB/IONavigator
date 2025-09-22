@@ -145,22 +145,62 @@ async def eval_sample(bench_root, sample, labels, model):
     return eval_results
 
 
-async def eval_sample_set(bench_root, completed_samples, labels, eval_model):
-    eval_results = []
-    for sample in completed_samples:
-        with console.status(
-            f"[cyan]Evaluating trace: {sample['trace_name']}...[/cyan]"
-        ) as status:
-            sample_results = await eval_sample(
+async def eval_sample_set(bench_root, completed_samples, labels, eval_model, max_concurrent=10):
+    """
+    Evaluate samples with controlled concurrency to respect rate limits.
+    
+    Args:
+        max_concurrent: Maximum number of concurrent evaluations (default: 10)
+                       Set to None for unlimited parallelism, or 1 for sequential
+    """
+    # If max_concurrent is 1, it's equivalent to just sequential processing
+    if max_concurrent == 1:
+        eval_results = []
+        for sample in completed_samples:
+            with console.status(
+                f"[cyan]Evaluating trace: {sample['trace_name']}...[/cyan]"
+            ) as status:
+                sample_results = await eval_sample(
+                    bench_root=bench_root, sample=sample, labels=labels, model=eval_model
+                )
+            console.print(
+                f"[bold green]Finished evaluating trace: {sample['trace_name']}[/bold green]"
+            )
+            eval_results.append(sample_results)
+        return eval_results
+    
+    # Use semaphore to limit concurrent requests and respect rate limits
+    semaphore = asyncio.Semaphore(max_concurrent) if max_concurrent else None
+    
+    async def eval_with_semaphore(sample):
+        if semaphore:
+            async with semaphore:
+                return await eval_sample(
+                    bench_root=bench_root, sample=sample, labels=labels, model=eval_model
+                )
+        else:
+            return await eval_sample(
                 bench_root=bench_root, sample=sample, labels=labels, model=eval_model
             )
+    
+    # Create tasks for controlled parallel evaluation
+    tasks = [eval_with_semaphore(sample) for sample in completed_samples]
+    
+    # Show progress while evaluations are running
+    concurrency_msg = f"up to {max_concurrent} concurrent" if max_concurrent else "unlimited parallel"
+    with console.status(
+        f"[cyan]Evaluating {len(completed_samples)} traces with {concurrency_msg} processing...[/cyan]"
+    ) as status:
+        # Wait for all evaluations to complete
+        eval_results = await asyncio.gather(*tasks)
+    
+    # Print completion message for all traces
+    for sample in completed_samples:
         console.print(
             f"[bold green]Finished evaluating trace: {sample['trace_name']}[/bold green]"
         )
 
-        # TODO: Create per trace visualizations of the performance
-
-        eval_results.append(sample_results)
+    # TODO: Create per trace visualizations of the performance
         
     return eval_results
 
@@ -272,6 +312,7 @@ def quantify_eval_results(eval_results):
         )
     )
 
+    # TODO: Create a rich visualization but also a textualize one with bar charts nd such 
     label_panels = []
     for label in per_label_results:
         label_result = per_label_results[label]
@@ -369,11 +410,18 @@ async def run_evaluation(**kwargs):
     console.print(
         f"[bold green]Evaluation is about to begin![/bold green][bold] {len(sample_list)}[/bold] traces will be evaluated.\n"
     )
+    # Use rate_limit from config to determine concurrency level
+    # Rate limit is requests per second; set concurrency to the rate limit divided by 10, and the max being 20
+    # This is a conservative estimate of the number of concurrent requests that can be made without exceeding the rate limit
+    # Can be changed to a higher number if needed
+    max_concurrent = min(config.get("rate_limit", 120) // 10, 20)  
+    
     eval_results = await eval_sample_set(
         bench_root=os.path.join(traces_path, "Datasets"),
         completed_samples=sample_list,
         labels=issue_definitions,
         eval_model=config["default_model"],
+        max_concurrent=max_concurrent,
     )
 
     quantified_eval_results = quantify_eval_results(eval_results)
