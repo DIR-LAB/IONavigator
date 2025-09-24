@@ -136,7 +136,7 @@ async def intra_module_merge(config):
         module_name = file.split("_")[0]
         if module_name not in rag_diagnoses:
             rag_diagnoses[module_name] = []
-        with open(os.path.join(rag_diagnoses_dir, file), "r") as f:
+        with open(os.path.join(rag_diagnoses_dir, file), "r", encoding="utf-8", errors = 'replace') as f:
             rag_diagnoses[module_name].append(json.load(f))
 
     modules = list(rag_diagnoses.keys())

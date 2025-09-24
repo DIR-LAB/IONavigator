@@ -11,6 +11,9 @@ from rich.console import Console
 from rich.panel import Panel
 from rich import print as rprint
 from io import BytesIO
+import argparse
+
+console = Console()
 
 
 def extract_tracebench(progress: Progress, content: BytesIO, directory: str, extraction_task: TaskID) -> None:
@@ -26,7 +29,7 @@ def extract_tracebench(progress: Progress, content: BytesIO, directory: str, ext
             progress.update(extraction_task, completed=i+1)
     
 
-def download_tracebench(url: str = 'https://tracebench.s3.us-east-1.amazonaws.com', version: str ='0.1.0', extract_to: str ="./evaluator"):
+def download_tracebench(url: str, version: str, extract_to):
     """download tracebench from the AWS S3 Bucket
 
     Args:
@@ -34,8 +37,6 @@ def download_tracebench(url: str = 'https://tracebench.s3.us-east-1.amazonaws.co
         version (str, optional): version of tracebench to download. Defaults to '0.1.0'.
         extract_to (str, optional): directory to extract to. Defaults to "./evaluator".
     """
-    console = Console()
-    
     try:
         # Create extract directory if it doesn't exist
         os.makedirs(extract_to, exist_ok=True)
@@ -104,11 +105,40 @@ def download_tracebench(url: str = 'https://tracebench.s3.us-east-1.amazonaws.co
         sys.exit(1)
 
 if __name__ == "__main__":
-    # Example usage - replace with your actual URL
-    # url = "https://example.com/path/to/script.zip"
-    
-    # You can also take URL from command line arguments
-    # if len(sys.argv) > 1:
-    #     url = sys.argv[1]
-    
-    download_tracebench()
+    parser = argparse.ArgumentParser(
+        description="TraceBench Loader: Download the relevant Tracebench files and scripts from the Cloud"
+    )
+    parser.add_argument(
+        "--url",
+        type=str,
+        default="https://tracebench.s3.us-east-1.amazonaws.com",
+        help="URL to website with the Tracebench ZIP file. Defaults to standard Tracebench AWS url.",
+    )
+    parser.add_argument(
+        "--version",
+        default="0.1.0",
+        type=str,
+        help="TraceBench Version to download. Defaults to 0.1.0.",
+    )
+    parser.add_argument(
+        "--extract_to",
+        type=str,
+        default="./evaluator",
+        help="Set the directory to download and extract traces to. Defaults to ./evaluator",
+    )
+    args = parser.parse_args()
+
+    console.print(
+        Panel(
+            f"[bold]Configuration Arguments:[/bold]\n"
+            f"URL: {args.url}\n"
+            f"Version: {args.version}\n"
+            f"Extract Directory: {args.extract_to}\n",
+            title="[b]Script Configuration[/b]",
+            expand=False,
+            border_style="magenta",
+        )
+    )
+
+
+    download_tracebench(**vars(args))
